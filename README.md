@@ -20,30 +20,19 @@ Anyone with the link joins as a peer. Each participant picks one language — th
 
 ## How it works
 
-```
-                    ┌─────────────────────────────┐
-                    │       LiveKit Room          │
-                    │                             │
-   Alice (EN) ─────▶│  mic + camera tracks        │◀──── Bob (ES)
-                    │                             │
-                    │  ┌───────────────────────┐  │
-                    │  │ Translator agent      │  │
-                    │  │ (Python worker)       │  │
-                    │  │                       │  │
-                    │  │ tx:alice:es  ─audio─┐ │  │
-                    │  │ tx:bob:en    ─audio─┤ │  │
-                    │  │                     │ │  │
-                    │  │ TextStream("lk.translation",
-                    │  │   target_lang=es, ...)  │
-                    │  └───────────────────────┘  │
-                    └─────────────────────────────┘
-                                  │
-                ▼                                    ▼
-   Alice subscribes to                Bob subscribes to
-   tx:bob:en  (en translation)        tx:alice:es  (es translation)
+```mermaid
+flowchart LR
+    Alice(["Alice<br/>EN"])
+    Bob(["Bob<br/>ES"])
+    Agent["<b>Translator agent</b><br/><i>Python worker, one per LiveKit room</i><br/><br/>One Gemini Live session per<br/>(speaker, target_lang) pair<br/><br/>Publishes per pair:<br/>• audio · <code>tx:speaker:target_lang</code><br/>• text · <code>lk.translation</code>"]
+
+    Alice -- mic --> Agent
+    Bob -- mic --> Agent
+    Agent -- "tx:bob:en<br/>(Bob in EN)" --> Alice
+    Agent -- "tx:alice:es<br/>(Alice in ES)" --> Bob
 ```
 
-Each participant's chosen language lives in their LiveKit `attributes.lang`. The Python agent watches `participantAttributesChanged`, reconciles a `(speaker, target_lang)` session map, and publishes one translator track per pair (skipping pairs where source == target). The frontend subscribes to either the native mic or the matching translator track based on the same predicate.
+Each participant's chosen language lives in their LiveKit `attributes.lang`. The agent watches `participantAttributesChanged`, reconciles a `(speaker, target_lang)` session map, and publishes one translator track per pair (skipping pairs where source == target). The frontend subscribes to either the native mic or the matching translator track based on the same predicate.
 
 ## Quick start
 
