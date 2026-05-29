@@ -3,13 +3,15 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
+RUN corepack enable
+
 # Install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copy source and build
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # --- Production stage ---
 FROM node:22-slim AS runner

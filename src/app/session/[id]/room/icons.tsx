@@ -83,14 +83,6 @@ export function CaptionsIcon() {
   );
 }
 
-export function CheckIcon() {
-  return (
-    <svg {...baseProps}>
-      <path d="M4 12l5 5L20 6" />
-    </svg>
-  );
-}
-
 export function ChevronDownIcon() {
   return (
     <svg {...baseProps} width={12} height={12}>

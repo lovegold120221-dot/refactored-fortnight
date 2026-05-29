@@ -48,28 +48,21 @@ Each participant's chosen language lives in their LiveKit `attributes.lang`. The
 ## Quick start
 
 You need:
-- Node.js 20+, npm
+- Node.js 20+, [pnpm](https://pnpm.io/) (or run `corepack enable` and let the repo's `packageManager` field pin it)
 - Python 3.11+, [uv](https://docs.astral.sh/uv/)
 - A [LiveKit Cloud](https://cloud.livekit.io) project (free tier works)
 - A [Gemini API key](https://aistudio.google.com/apikey)
 
 ```bash
-# 1. Set up env — both the web app and the agent need credentials
-cat > .env.local <<EOF
-LIVEKIT_URL=wss://your-project.livekit.cloud
-LIVEKIT_API_KEY=
-LIVEKIT_API_SECRET=
-GEMINI_API_KEY=
-EOF
-cp .env.local translator/.env.local
+# 1. Install deps and seed env files
+pnpm run setup
 
-# 2. Install
-npm install
-(cd translator && uv sync)
+# 2. Fill in credentials in .env.local and translator/.env.local
+#    LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET (both files)
+#    GEMINI_API_KEY (translator/.env.local only)
 
-# 3. Run both processes in two terminals
-npm run dev                                          # Next.js on :3000
-(cd translator && uv run python src/agent.py dev)    # Agent worker
+# 3. Run frontend + agent worker together
+pnpm run dev
 ```
 
 Open <http://localhost:3000>, click **Create session**, share the URL with another browser, pick different languages, unmute.
@@ -96,7 +89,7 @@ gemini-live-translate-livekit/
 │       └── config.ts                   # Caps, attribute keys
 └── translator/                         # Python LiveKit Agents worker
     ├── src/
-    │   ├── agent.py                    # @server.rtc_session(agent_name="translator")
+    │   ├── agent.py                    # @server.rtc_session(agent_name="gemini-translator")
     │   ├── router.py                   # TranslationRouter (reconcile loop)
     │   ├── session.py                  # GeminiSession (one per speaker→target pair)
     │   ├── audio.py                    # PCM glue
@@ -133,7 +126,6 @@ Caps in `src/lib/config.ts` and `translator/src/config.py` — adjust together:
 | Max participants per room | 8 | `MAX_PARTICIPANTS` (token route) |
 | Session TTL | 4h | token route `ttl` |
 | Empty-room timeout | 60s | token route |
-| Idle disconnect | 15min | client (TBD) |
 | Session grace on mute | 10s | `SESSION_GRACE_SEC` (agent) |
 | Reconcile debounce | 250ms | `RECONCILE_DEBOUNCE_SEC` (agent) |
 | Gemini model | `gemini-3.1-flash-lite-live-translate` | `GEMINI_MODEL` (agent) |
@@ -146,7 +138,7 @@ Caps in `src/lib/config.ts` and `translator/src/config.py` — adjust together:
 - **Translation** — `google-genai` Live API (`client.aio.live.connect()` with `streamingTranslationConfig`)
 - **Audio I/O** — `livekit.rtc.AudioStream` (16 kHz mono in) + `AudioSource` (24 kHz mono out)
 - **Typography** — Instrument Serif (display), DM Sans (body), DM Mono (status)
-- **Package management** — `npm` + `uv`
+- **Package management** — `pnpm` + `uv`
 
 ## License
 

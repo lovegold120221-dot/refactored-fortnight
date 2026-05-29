@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from collections.abc import AsyncIterator
 
@@ -60,11 +59,3 @@ async def push_pcm_to_source(
             logger.debug("AudioSource closed mid-capture; dropping frame")
         else:
             raise
-
-
-class _BoundedQueue(asyncio.Queue[bytes]):
-    """Small bounded queue used to back-pressure Gemini output into LiveKit publish."""
-
-
-def new_output_queue(maxsize: int = 128) -> _BoundedQueue:
-    return _BoundedQueue(maxsize=maxsize)
