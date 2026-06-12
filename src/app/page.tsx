@@ -139,7 +139,6 @@ export default function Home() {
             <button
               className="meeting-action meeting-action--join"
               onClick={() => setActivePanel("join")}
-              aria-pressed={activePanel === "join" ? "true" : "false"}
             >
               <span className="meeting-action-icon" aria-hidden>
                 <JoinIcon />
@@ -150,7 +149,6 @@ export default function Home() {
             <button
               className="meeting-action meeting-action--schedule"
               onClick={showSchedulePanel}
-              aria-pressed={activePanel === "schedule" ? "true" : "false"}
             >
               <span className="meeting-action-icon" aria-hidden>
                 <CalendarIcon />
