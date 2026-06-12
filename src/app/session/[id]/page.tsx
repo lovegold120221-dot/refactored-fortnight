@@ -22,24 +22,20 @@ export default function PreFlightPage({
   const router = useRouter();
   const { profile, updateProfile } = useUser();
 
-  const [displayName, setDisplayName] = useState(
-    () => getSessionItem(STORAGE_KEY_NAME) ?? profile?.name ?? ""
-  );
-  const [lang, setLang] = useState<string>(
-    () => getSessionItem(STORAGE_KEY_LANG) ?? profile?.default_language ?? "en"
-  );
-
-  // Sync profile data when loaded if local session is empty
-  useEffect(() => {
-    if (profile && !getSessionItem(STORAGE_KEY_NAME)) {
-      const t = setTimeout(() => {
-        if (!displayName && profile.name) setDisplayName(profile.name);
-        if (lang === "en" && profile.default_language) setLang(profile.default_language);
-      }, 0);
-      return () => clearTimeout(t);
-    }
-  }, [profile, displayName, lang]);
+  const [displayName, setDisplayName] = useState("");
+  const [lang, setLang] = useState<string>("en");
   const [shareCopied, setShareCopied] = useState(false);
+
+  // Hydrate from sessionStorage + profile after mount so server & client
+  // first render are identical (prevents hydration mismatch on disabled attr).
+  useEffect(() => {
+    const savedName = getSessionItem(STORAGE_KEY_NAME);
+    const savedLang = getSessionItem(STORAGE_KEY_LANG);
+    if (savedName) setDisplayName(savedName);
+    if (savedLang) setLang(savedLang);
+    if (!savedName && profile?.name) setDisplayName(profile.name);
+    if (!savedLang && profile?.default_language) setLang(profile.default_language);
+  }, [profile]);
 
   async function handleJoin() {
     if (!displayName.trim()) return;

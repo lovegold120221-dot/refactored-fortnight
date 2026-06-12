@@ -3235,7 +3235,6 @@ html[data-theme="light"] .tile-name {
   cursor: pointer;
   inset: 0;
   background: var(--fg-ghost);
-  border-radius: 24px;
   transition: background 0.2s;
 }
 
@@ -3247,12 +3246,11 @@ html[data-theme="light"] .tile-name {
   left: 3px;
   bottom: 3px;
   background: #fff;
-  border-radius: 50%;
   transition: transform 0.2s;
 }
 
 .settings-switch input:checked + .settings-slider {
-  background: var(--accent);
+  background: var(--fg);
 }
 
 .settings-switch input:checked + .settings-slider::before {
@@ -3379,19 +3377,18 @@ html[data-theme="light"] .tile-name {
 
 .settings-cam-retry {
   margin-top: 4px;
-  background: var(--accent);
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
   border: none;
-  border-radius: 6px;
-  padding: 6px 16px;
-  font-size: 12px;
+  padding: 8px 20px;
+  font-size: 13px;
   cursor: pointer;
   font-family: var(--font-body);
   font-weight: 500;
 }
 
 .settings-cam-retry:hover {
-  background: var(--accent-strong);
+  background: #333028;
 }
 
 /* Preview actions row */
@@ -3416,10 +3413,9 @@ html[data-theme="light"] .tile-name {
 
 .settings-bg-picker {
   margin-top: 12px;
-  padding: 12px;
-  background: var(--surface-strong);
-  border-radius: 10px;
-  border: 1px solid var(--border-light);
+  padding: 16px;
+  background: transparent;
+  border: 1px solid var(--border);
 }
 
 .settings-bg-options {
@@ -3434,9 +3430,9 @@ html[data-theme="light"] .tile-name {
   align-items: center;
   gap: 6px;
   padding: 8px 4px;
-  border-radius: 8px;
+  border-radius: 0;
   background: transparent;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   color: var(--fg-secondary);
   font-family: var(--font-body);
@@ -3446,13 +3442,12 @@ html[data-theme="light"] .tile-name {
 }
 
 .settings-bg-opt:hover {
-  background: var(--bg-inset);
+  border-color: var(--fg-tertiary);
 }
 
 .settings-bg-opt--active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
+  border-color: var(--fg);
+  color: var(--fg);
   font-weight: 600;
 }
 
@@ -3460,29 +3455,28 @@ html[data-theme="light"] .tile-name {
 .settings-bg-thumb {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--bg-inset);
+  background: var(--bg);
+  border: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .settings-bg-thumb--none {
-  background: var(--bg-inset);
   color: var(--fg-ghost);
 }
 
 .settings-bg-thumb--blur {
-  background: linear-gradient(135deg, #444, #222);
-  color: rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, var(--bg-inset), var(--bg));
+  color: var(--fg-ghost);
 }
 
 .settings-bg-thumb--upload {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border: 1px dashed var(--accent);
+  color: var(--fg-secondary);
+  border: 1px dashed var(--border);
 }
 
 .settings-bg-thumb-img {
@@ -3498,7 +3492,6 @@ html[data-theme="light"] .tile-name {
   right: -2px;
   width: 18px;
   height: 18px;
-  border-radius: 50%;
   background: var(--error);
   color: #fff;
   border: none;
@@ -3517,8 +3510,7 @@ html[data-theme="light"] .tile-name {
 
 /* Upload opt callout */
 .settings-bg-opt--upload:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-color: var(--fg);
 }
 
 /* Responsive */
