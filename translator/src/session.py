@@ -54,12 +54,14 @@ class GeminiSession:
         room: rtc.Room,
         speaker_identity: str,
         speaker_track: rtc.RemoteAudioTrack,
+        track_source: str,
         target_lang: str,
         gemini_api_key: str,
     ) -> None:
         self._room = room
         self._speaker_identity = speaker_identity
         self._speaker_track = speaker_track
+        self._track_source = track_source
         self._target_lang = target_lang
         self._gemini_api_key = gemini_api_key
 
@@ -74,7 +76,7 @@ class GeminiSession:
 
     async def start(self) -> None:
         """Publish the translator track and start the connect-and-pump loop."""
-        track_name = f"tx:{self._speaker_identity}:{self._target_lang}"
+        track_name = f"tx:{self._speaker_identity}:{self._track_source}:{self._target_lang}"
         self._local_track = rtc.LocalAudioTrack.create_audio_track(
             track_name, self._audio_source
         )

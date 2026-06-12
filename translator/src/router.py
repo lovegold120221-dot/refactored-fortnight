@@ -17,8 +17,8 @@ from session import GeminiSession
 
 logger = logging.getLogger("translator.router")
 
-# (speaker_identity, target_lang)
-SessionKey = tuple[str, str]
+# (speaker_identity, track_sid, target_lang)
+SessionKey = tuple[str, str, str]
 
 
 class TranslationRouter:
@@ -37,7 +37,7 @@ class TranslationRouter:
         self._gemini_api_key = gemini_api_key
 
         # Per-speaker mic track that is currently subscribed and unmuted.
-        self._speaker_tracks: dict[str, rtc.RemoteAudioTrack] = {}
+        self._speaker_tracks: dict[str, dict[str, rtc.RemoteAudioTrack]] = {}
 
         # Active sessions keyed by (speaker_identity, target_lang).
         self._sessions: dict[SessionKey, GeminiSession] = {}
@@ -79,7 +79,9 @@ class TranslationRouter:
             if track.kind == rtc.TrackKind.KIND_AUDIO and isinstance(
                 track, rtc.RemoteAudioTrack
             ):
-                self._speaker_tracks[participant.identity] = track
+                if participant.identity not in self._speaker_tracks:
+                    self._speaker_tracks[participant.identity] = {}
+                self._speaker_tracks[participant.identity][track.sid] = track
                 self._schedule_reconcile()
 
         @room.on("track_unsubscribed")
@@ -89,7 +91,10 @@ class TranslationRouter:
             participant: rtc.RemoteParticipant,
         ) -> None:
             if track.kind == rtc.TrackKind.KIND_AUDIO:
-                self._speaker_tracks.pop(participant.identity, None)
+                if participant.identity in self._speaker_tracks:
+                    self._speaker_tracks[participant.identity].pop(track.sid, None)
+                    if not self._speaker_tracks[participant.identity]:
+                        del self._speaker_tracks[participant.identity]
                 self._schedule_reconcile()
 
         @room.on("track_muted")
@@ -108,7 +113,9 @@ class TranslationRouter:
                     and pub.kind == rtc.TrackKind.KIND_AUDIO
                     and isinstance(pub.track, rtc.RemoteAudioTrack)
                 ):
-                    self._speaker_tracks[p.identity] = pub.track
+                    if p.identity not in self._speaker_tracks:
+                        self._speaker_tracks[p.identity] = {}
+                    self._speaker_tracks[p.identity][pub.track.sid] = pub.track
 
         self._schedule_reconcile()
 
@@ -161,14 +168,21 @@ class TranslationRouter:
                     # Race: an old session is still cooling down — let it finish
                     # before starting a new one. Reschedule.
                     continue
-                speaker_identity, target_lang = key
-                track = self._speaker_tracks.get(speaker_identity)
+                speaker_identity, track_sid, target_lang = key
+                tracks = self._speaker_tracks.get(speaker_identity, {})
+                track = tracks.get(track_sid)
                 if track is None:
                     continue
+                
+                # Determine a source name to help the frontend logic.
+                # If it's screen share audio, use "screen_share_audio", else "mic".
+                source_str = "screen_share_audio" if track.source == rtc.TrackSource.SOURCE_SCREEN_SHARE_AUDIO else "mic"
+
                 session = GeminiSession(
                     room=self._room,
                     speaker_identity=speaker_identity,
                     speaker_track=track,
+                    track_source=source_str,
                     target_lang=target_lang,
                     gemini_api_key=self._gemini_api_key,
                 )
@@ -192,11 +206,11 @@ class TranslationRouter:
         speakers = self._active_speakers()
 
         desired: set[SessionKey] = set()
-        for speaker_identity, source_lang in speakers:
+        for speaker_identity, track_sid, source_lang in speakers:
             for tgt in target_langs:
                 if tgt == source_lang:
                     continue
-                desired.add((speaker_identity, tgt))
+                desired.add((speaker_identity, track_sid, tgt))
         return desired
 
     def _listener_target_langs(self) -> set[str]:
@@ -208,25 +222,24 @@ class TranslationRouter:
                 langs.add(lang)
         return langs
 
-    def _active_speakers(self) -> list[tuple[str, str]]:
-        """List of (identity, lang) for speakers that have an enabled mic track."""
-        out: list[tuple[str, str]] = []
+    def _active_speakers(self) -> list[tuple[str, str, str]]:
+        """List of (identity, track_sid, lang) for speakers that have enabled audio tracks."""
+        out: list[tuple[str, str, str]] = []
         for p in self._room.remote_participants.values():
             lang = (p.attributes or {}).get(PARTICIPANT_LANG_ATTR)
             if not lang or lang == NATIVE_LANG:
                 # Without a declared language, we can't safely translate.
                 continue
-            if p.identity not in self._speaker_tracks:
-                continue
-            if not self._has_unmuted_mic(p):
-                continue
-            out.append((p.identity, lang))
+            tracks = self._speaker_tracks.get(p.identity, {})
+            for track_sid, track in tracks.items():
+                if self._is_track_unmuted(p, track_sid):
+                    out.append((p.identity, track_sid, lang))
         return out
 
-    def _has_unmuted_mic(self, p: rtc.RemoteParticipant) -> bool:
-        for pub in p.track_publications.values():
-            if pub.kind == rtc.TrackKind.KIND_AUDIO and not pub.muted:
-                return True
+    def _is_track_unmuted(self, p: rtc.RemoteParticipant, track_sid: str) -> bool:
+        pub = p.track_publications.get(track_sid)
+        if pub and pub.kind == rtc.TrackKind.KIND_AUDIO and not pub.muted:
+            return True
         return False
 
     # --- Teardown ----------------------------------------------------------
