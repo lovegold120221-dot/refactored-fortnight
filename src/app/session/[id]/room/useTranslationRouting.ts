@@ -44,6 +44,22 @@ function parseTranslationTrackName(
  *           → lower volume of the source track to 15% (ducking)
  *         Else:
  *           → set volume to 100%
+ * language and preferences.
+ *
+ * Behavior matrix:
+ *
+ *   translationEnabled=false (passthrough):
+ *     - all human mic tracks subscribed (hear everyone directly)
+ *     - all agent translation tracks unsubscribed
+ *
+ *   translationEnabled=true:
+ *     - for each remote human participant P:
+ *         hearNative = (myLang === 'none' OR P.lang === myLang)
+ *         subscribe to mic IF hearNative OR !muteOriginal
+ *           → hearNative: same language → no filter needed
+ *           → !muteOriginal: user wants to hear original + translation
+ *         unsubscribe from mic IF !hearNative AND muteOriginal
+ *           → user hears only the translated version
  *     - for the agent:
  *         subscribe to a translation track IF
  *           target_lang === myLang AND
@@ -51,6 +67,11 @@ function parseTranslationTrackName(
  *         else unsubscribe
  */
 export function useTranslationRouting(myLang: string, translationEnabled: boolean = true, muteOriginal: boolean = true) {
+export function useTranslationRouting(
+  myLang: string,
+  translationEnabled: boolean,
+  muteOriginal: boolean,
+) {
   const room = useRoomContext();
 
   useEffect(() => {
@@ -66,7 +87,7 @@ export function useTranslationRouting(myLang: string, translationEnabled: boolea
 
       for (const p of remotes) {
         if (p.kind === ParticipantKind.AGENT) {
-          applyAgentSubscriptions(p, myLang, peerLangs);
+          applyAgentSubscriptions(p, myLang, peerLangs, translationEnabled);
         } else {
           applyHumanSubscriptions(p, myLang, translationEnabled, muteOriginal);
         }
@@ -100,8 +121,19 @@ function applyHumanSubscriptions(
   translationEnabled: boolean,
   muteOriginal: boolean,
 ) {
+  if (!translationEnabled) {
+    // Passthrough: subscribe to all human mic tracks.
+    for (const pub of p.audioTrackPublications.values()) {
+      if (pub.source !== Track.Source.Microphone) continue;
+      setSubscribed(pub, true);
+    }
+    return;
+  }
+
+  // Translation is on: subscribe based on language match + muteOriginal.
   const theirLang = p.attributes?.[PARTICIPANT_LANG_ATTR];
   const hearNative = myLang === NATIVE_LANG || theirLang === myLang;
+  const shouldSubscribe = hearNative || !muteOriginal;
 
   for (const pub of p.audioTrackPublications.values()) {
     if (pub.source !== Track.Source.Microphone && pub.source !== Track.Source.ScreenShareAudio) continue;
@@ -121,6 +153,8 @@ function applyHumanSubscriptions(
         }
       }
     }
+    if (pub.source !== Track.Source.Microphone) continue;
+    setSubscribed(pub, shouldSubscribe);
   }
 }
 
@@ -128,6 +162,7 @@ function applyAgentSubscriptions(
   agent: RemoteParticipant,
   myLang: string,
   peerLangs: Map<string, string | undefined>,
+  translationEnabled: boolean,
 ) {
   for (const pub of agent.audioTrackPublications.values()) {
     const parsed = parseTranslationTrackName(pub.trackName);
@@ -136,7 +171,8 @@ function applyAgentSubscriptions(
       continue;
     }
 
-    if (myLang === NATIVE_LANG) {
+    // When translation is off or user wants native only: never agent tracks.
+    if (!translationEnabled || myLang === NATIVE_LANG) {
       setSubscribed(pub, false);
       continue;
     }

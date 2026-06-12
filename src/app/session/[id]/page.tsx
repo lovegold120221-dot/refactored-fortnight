@@ -61,21 +61,20 @@ export default function PreFlightPage({
   }
 
   return (
-    <div className="page">
-      <div className="container">
-        <h1 className="display display-lg enter" style={{ marginBottom: 8 }}>
+    <div className="page page-centered">
+      <div className="entry-panel panel-centered">
+        <h1 className="display display-lg enter mb-8">
           Join the call
         </h1>
         <p
-          className="body enter-d1"
-          style={{ marginBottom: 32 }}
+          className="body enter-d1 mb-32"
         >
           Pick your language — that&apos;s what you&apos;ll speak and what you&apos;ll
           hear everyone else in.
         </p>
 
-        <div className="enter-d2" style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 32 }}>
-          <label className="label" style={{ display: "block" }}>
+        <div className="enter-d2 flex-col gap-20 mb-32">
+          <label className="label block">
             Your name
             <input
               type="text"
@@ -83,19 +82,17 @@ export default function PreFlightPage({
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g. Jesse"
               autoFocus
-              className="select-field"
-              style={{ marginTop: 8, backgroundImage: "none", paddingRight: 16 }}
+              className="select-field mt-8 no-bg pr-16"
               maxLength={40}
             />
           </label>
 
-          <label className="label" style={{ display: "block" }}>
+          <label className="label block">
             Language
             <select
               value={lang}
               onChange={(e) => setLang(e.target.value)}
-              className="select-field"
-              style={{ marginTop: 8 }}
+              className="select-field mt-8"
             >
               {PICKER_LANGUAGES.map((l) => (
                 <option key={l.code} value={l.code}>
@@ -106,7 +103,7 @@ export default function PreFlightPage({
           </label>
         </div>
 
-        <div className="enter-d3" style={{ display: "flex", gap: 12, flexDirection: "column" }}>
+        <div className="enter-d3 flex-col gap-12">
           <button
             className="btn btn-dark"
             onClick={handleJoin}
@@ -123,7 +120,7 @@ export default function PreFlightPage({
           </button>
         </div>
 
-        <p className="mono enter-d4" style={{ marginTop: 32 }}>
+        <p className="mono enter-d4 mt-32">
           Camera and mic stay off until you turn them on.
         </p>
       </div>

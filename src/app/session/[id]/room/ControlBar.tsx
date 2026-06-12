@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import {
   useLocalParticipant,
   useRoomContext,
+  useTrackVolume,
 } from "@livekit/components-react";
-import { Track } from "livekit-client";
-import { SpeakerIcon } from "./icons";
+import { Track, LocalAudioTrack } from "livekit-client";
+import { SpeakerIcon, SpeakerOffIcon } from "./icons";
 import {
   CamOffIcon,
   CamOnIcon,
@@ -32,10 +33,14 @@ export default function ControlBar({
   onLeave,
   activeSidebar,
   onToggleSidebar,
+  speakerMuted,
+  onToggleSpeaker,
 }: {
   onLeave: () => void;
   activeSidebar: "participants" | "captions" | "translation" | "chat" | "breakout" | null;
   onToggleSidebar: (sidebar: "participants" | "captions" | "translation" | "chat" | "breakout") => void;
+  speakerMuted: boolean;
+  onToggleSpeaker: () => void;
 }) {
   const { localParticipant, microphoneTrack, cameraTrack } = useLocalParticipant();
   const room = useRoomContext();
@@ -90,8 +95,10 @@ export default function ControlBar({
 
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
+        video: { displaySurface: "browser" },
         audio: true,
+        // @ts-expect-error - preferCurrentTab is a relatively new API flag not in all TS definitions
+        preferCurrentTab: true,
       });
 
       const mediaRecorder = new MediaRecorder(stream);
@@ -143,14 +150,10 @@ export default function ControlBar({
     <div className="control-bar">
       {/* ——— Left: Audio / Video ——— */}
       <div className="control-bar-left">
-        <CtrlButton
-          active={micOn}
-          onClick={toggleMic}
-          label={micOn ? "Mute" : "Unmute"}
-          icon={micOn ? <MicOnIcon /> : <MicOffIcon />}
-          dataMobile="primary"
-          muted={!micOn}
-          hasCaret
+        <MicButton
+          micOn={micOn}
+          toggleMic={toggleMic}
+          microphoneTrack={microphoneTrack?.track as LocalAudioTrack | undefined}
         />
         <CtrlButton
           active={camOn}
@@ -248,6 +251,13 @@ export default function ControlBar({
           hasCaret
         />
         <CtrlButton
+          active={speakerMuted}
+          onClick={onToggleSpeaker}
+          label={speakerMuted ? "Unmute Speakers" : "Mute Speakers"}
+          icon={speakerMuted ? <SpeakerOffIcon /> : <SpeakerIcon />}
+          dataMobile="overflow"
+        />
+        <CtrlButton
           active={false}
           onClick={() => router.push("/settings")}
           label="Settings"
@@ -317,6 +327,37 @@ export default function ControlBar({
   );
 }
 
+function MicButton({
+  micOn,
+  toggleMic,
+  microphoneTrack,
+}: {
+  micOn: boolean;
+  toggleMic: () => void;
+  microphoneTrack?: LocalAudioTrack;
+}) {
+  const volume = useTrackVolume(microphoneTrack);
+  const isSpeaking = micOn && volume > 0.05;
+  
+  return (
+    <CtrlButton
+      active={micOn}
+      onClick={toggleMic}
+      label={micOn ? "Mute" : "Unmute"}
+      icon={micOn ? <MicOnIcon /> : <MicOffIcon />}
+      dataMobile="primary"
+      muted={!micOn}
+      hasCaret
+      className="mic-btn"
+      /* eslint-disable-next-line react-native/no-inline-styles */
+      style={{
+        '--volume-opacity': isSpeaking ? Math.min(0.8, volume * 2) : 0,
+        '--volume-scale': isSpeaking ? 1 + (volume * 0.5) : 1,
+      } as React.CSSProperties}
+    />
+  );
+}
+
 function CtrlButton({
   active,
   onClick,
@@ -325,6 +366,7 @@ function CtrlButton({
   dataMobile,
   hasCaret,
   muted,
+  style,
   className = "",
 }: {
   active: boolean;
@@ -335,6 +377,7 @@ function CtrlButton({
   hasCaret?: boolean;
   muted?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
     <button
@@ -343,6 +386,8 @@ function CtrlButton({
       title={label}
       aria-label={label}
       data-mobile={dataMobile}
+      // eslint-disable-next-line
+      style={style}
     >
       <span className="ctrl-icon-row">
         <span className="ctrl-icon">{icon}</span>

@@ -79,12 +79,12 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
 
   if (error) {
     return (
-      <div className="page">
-        <div className="container" style={{ textAlign: "center" }}>
-          <h1 className="display display-md" style={{ marginBottom: 16 }}>
+      <div className="page text-center">
+        <div className="container">
+          <h1 className="display display-md mb-16">
             Couldn&apos;t join the call
           </h1>
-          <p className="body" style={{ marginBottom: 24 }}>
+          <p className="body mb-24">
             {error}
           </p>
           <button className="btn btn-outline" onClick={() => router.push("/")}>
@@ -97,9 +97,9 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
 
   if (!token || !serverUrl) {
     return (
-      <div className="page">
-        <div className="container" style={{ textAlign: "center" }}>
-          <div className="spinner" style={{ margin: "0 auto 16px" }} />
+      <div className="page text-center">
+        <div className="container">
+          <div className="spinner mx-auto mb-16" />
           <p className="mono">Connecting…</p>
         </div>
       </div>
@@ -116,7 +116,7 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
       connect={true}
       onDisconnected={handleLeave}
       data-lk-theme="default"
-      style={{ height: "100vh", background: "var(--bg)" }}
+      className="h-100vh bg-bg"
     >
       <InCall initialLang={initialLang} onLeave={handleLeave} />
       <RoomAudioRenderer />
@@ -126,14 +126,7 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
           playback is blocked and calls room.startAudio() on click. */}
       <StartAudio
         label="🔊 Tap to enable translated audio"
-        className="btn"
-        style={{
-          position: "fixed",
-          left: "50%",
-          bottom: 96,
-          transform: "translateX(-50%)",
-          zIndex: 1000,
-        }}
+        className="btn start-audio-fixed"
       />
     </LiveKitRoom>
   );

@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { PICKER_LANGUAGES } from "@/lib/languages";
 import { SettingsIcon } from "@/app/session/[id]/room/icons";
 import CameraPreview from "./CameraPreview";
+import TranslationPlayground from "./TranslationPlayground";
 
 type SettingsTab = "general" | "audio" | "video" | "translation";
 
@@ -114,8 +115,9 @@ export default function SettingsPage() {
         </div>
         <div className="settings-topbar-right">
           <button
+            type="button"
             className="settings-close-btn"
-            onClick={() => router.back()}
+            onClick={() => { if (window.history.length > 1) router.back(); else router.push('/'); }}
             aria-label="Close settings"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -195,13 +197,13 @@ export default function SettingsPage() {
                     <span className="settings-label">Auto-join audio</span>
                     <p className="settings-hint">Automatically connect to audio when joining a meeting</p>
                   </div>
-                  <label className="settings-switch">
+                  <label className="toggle-switch">
                     <input
                       type="checkbox"
                       checked={autoJoinAudio}
                       onChange={(e) => { setAutoJoinAudio(e.target.checked); markDirty(); }}
                     />
-                    <span className="settings-slider" />
+                    <span className="slider" />
                   </label>
                 </div>
 
@@ -210,13 +212,13 @@ export default function SettingsPage() {
                     <span className="settings-label">Background noise suppression</span>
                     <p className="settings-hint">Filter out background noise from your microphone</p>
                   </div>
-                  <label className="settings-switch">
+                  <label className="toggle-switch">
                     <input
                       type="checkbox"
                       checked={noiseSuppression}
                       onChange={(e) => { setNoiseSuppression(e.target.checked); markDirty(); }}
                     />
-                    <span className="settings-slider" />
+                    <span className="slider" />
                   </label>
                 </div>
               </div>
@@ -295,13 +297,13 @@ export default function SettingsPage() {
                     <span className="settings-label">Show captions</span>
                     <p className="settings-hint">Display translated captions during meetings</p>
                   </div>
-                  <label className="settings-switch">
+                  <label className="toggle-switch">
                     <input
                       type="checkbox"
                       checked={showCaptions}
                       onChange={(e) => { setShowCaptions(e.target.checked); markDirty(); }}
                     />
-                    <span className="settings-slider" />
+                    <span className="slider" />
                   </label>
                 </div>
 
@@ -310,13 +312,13 @@ export default function SettingsPage() {
                     <span className="settings-label">Mute original audio</span>
                     <p className="settings-hint">Silence the speaker&apos;s original language and only hear the translation</p>
                   </div>
-                  <label className="settings-switch">
+                  <label className="toggle-switch">
                     <input
                       type="checkbox"
                       checked={muteOriginalAudio}
                       onChange={(e) => { setMuteOriginalAudio(e.target.checked); markDirty(); }}
                     />
-                    <span className="settings-slider" />
+                    <span className="slider" />
                   </label>
                 </div>
 
@@ -325,15 +327,19 @@ export default function SettingsPage() {
                     <span className="settings-label">Play translated audio</span>
                     <p className="settings-hint">Hear the translated speech through your speakers</p>
                   </div>
-                  <label className="settings-switch">
+                  <label className="toggle-switch">
                     <input
                       type="checkbox"
                       checked={translateAudioPlayback}
                       onChange={(e) => { setTranslateAudioPlayback(e.target.checked); markDirty(); }}
                     />
-                    <span className="settings-slider" />
+                    <span className="slider" />
                   </label>
                 </div>
+
+                {/* ——— Translation Test Playground ——— */}
+                <div className="settings-divider" />
+                <TranslationPlayground voice={voice} />
               </div>
             )}
 
@@ -349,7 +355,7 @@ export default function SettingsPage() {
               <button
                 className="btn btn-outline"
                 type="button"
-                onClick={() => router.back()}
+                onClick={() => { if (window.history.length > 1) router.back(); else router.push('/'); }}
               >
                 Cancel
               </button>

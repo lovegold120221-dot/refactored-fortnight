@@ -17,29 +17,53 @@ export default function OrbitTranslationPanel({
   onClose,
   myLang,
   onLangChange,
+  translationEnabled,
+  muteOriginal,
+  onToggleTranslation,
+  onToggleMuteOriginal,
 }: {
   onClose: () => void;
   myLang: string;
   onLangChange: (lang: string) => void;
+  translationEnabled: boolean;
+  muteOriginal: boolean;
+  onToggleTranslation: () => void;
+  onToggleMuteOriginal: () => void;
 }) {
   const [voice, setVoice] = useState("orus");
   const [captionsOn, setCaptionsOn] = useState(true);
-  const [muteOriginal, setMuteOriginal] = useState(true);
 
   return (
     <div className="sidebar-panel">
       <div className="sidebar-header">
-        <span>Orbit Translation</span>
-        <button
-          className="sidebar-close"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+        <div className="sidebar-header-left">
+          <span>Orbit Translation</span>
+          <span
+            className={`otp-status ${translationEnabled ? "otp-status-on" : "otp-status-off"}`}
+            title={translationEnabled ? "Translation active" : "Translation off"}
+          >
+            {translationEnabled ? "Active" : "Off"}
+          </span>
+        </div>
+        <div className="sidebar-header-right">
+          <button
+            className={`otp-start-btn ${translationEnabled ? "otp-start-btn-on" : ""}`}
+            onClick={onToggleTranslation}
+            title={translationEnabled ? "Stop translation" : "Start translation"}
+          >
+            {translationEnabled ? "Stop" : "Start"}
+          </button>
+          <button
+            className="sidebar-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div className="sidebar-body">
@@ -104,7 +128,7 @@ export default function OrbitTranslationPanel({
         <div className="otp-section">
           <h4 className="otp-label">Output</h4>
           <label className="otp-checkbox-label">
-            <input type="checkbox" defaultChecked />
+            <input type="checkbox" checked={translationEnabled} onChange={onToggleTranslation} />
             <span>Play translated audio to me</span>
           </label>
           <label className="otp-checkbox-label">
@@ -112,7 +136,7 @@ export default function OrbitTranslationPanel({
             <span>Show captions</span>
           </label>
           <label className="otp-checkbox-label">
-            <input type="checkbox" checked={muteOriginal} onChange={(e) => setMuteOriginal(e.target.checked)} />
+            <input type="checkbox" checked={muteOriginal} onChange={onToggleMuteOriginal} />
             <span>Mute original audio: {muteOriginal ? "On" : "Off"}</span>
           </label>
         </div>

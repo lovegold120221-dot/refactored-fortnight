@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
-import { SettingsIcon } from "@/app/session/[id]/room/icons";
 import Link from "next/link";
 
 type ActivePanel = "join" | "schedule";
@@ -96,6 +95,10 @@ export default function Home() {
           <span className="entry-nav-item entry-nav-item--active">Home</span>
           <span className="entry-nav-item">Meetings</span>
           <span className="entry-nav-item">Contacts</span>
+          <span className="entry-nav-divider" role="separator" />
+          <Link href="/settings" className="entry-nav-item entry-nav-settings">
+            Settings
+          </Link>
         </nav>
       </aside>
 
@@ -115,11 +118,7 @@ export default function Home() {
               <ThemeIcon />
               <span>{theme === "dark" ? "Light" : "Dark"}</span>
             </button>
-            <Link href="/settings" className="entry-theme-toggle" style={{ textDecoration: 'none' }}>
-              <SettingsIcon />
-              <span>Settings</span>
-            </Link>
-            <p className="entry-powered">Powered by Eburon AI</p>
+            <p className="entry-powered"></p>
           </div>
         </header>
 

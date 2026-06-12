@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -36,8 +37,11 @@ export default function InCall({
   const { localParticipant } = useLocalParticipant();
   const remotes = useRemoteParticipants();
   const [lang, setLang] = useState(initialLang);
+  const [translationEnabled, setTranslationEnabled] = useState(true);
+  const [muteOriginal, setMuteOriginal] = useState(true);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [copied, setCopied] = useState(false);
+  const [speakerMuted, setSpeakerMuted] = useState(false);
   const router = useRouter();
 
   const handleCopyLink = () => {
@@ -95,7 +99,16 @@ export default function InCall({
     };
   }, [room, localParticipant, lang]);
 
-  useTranslationRouting(lang);
+  useTranslationRouting(lang, translationEnabled, muteOriginal);
+
+  // Speaker mute toggle — mutes/unmutes all <audio> elements in the page
+  // (both remote mic tracks and agent translation tracks).
+  useEffect(() => {
+    const audios = document.querySelectorAll<HTMLAudioElement>("audio");
+    for (const el of audios) {
+      el.muted = speakerMuted;
+    }
+  }, [speakerMuted]);
 
   const humanRemotes = useMemo(
     () => remotes.filter((p) => p.kind !== ParticipantKind.AGENT),
@@ -122,12 +135,12 @@ export default function InCall({
         {/* Top chrome */}
         <header className="orbit-header">
           {/* Row 1: Title bar */}
-          <div className="orbit-titlebar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <div className="orbit-titlebar">
             <span className="orbit-titlebar-title">Orbit Meeting</span>
             <button 
               onClick={handleCopyLink} 
               title="Copy Meeting Link"
-              style={{ background: 'transparent', border: 'none', color: 'var(--fg-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '4px' }}
+              className="orbit-copy-link-btn"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="18" cy="5" r="3"></circle>
@@ -137,7 +150,7 @@ export default function InCall({
                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
               </svg>
             </button>
-            {copied && <span style={{fontSize: '11px', color: 'var(--success)'}}>Copied!</span>}
+            {copied && <span className="orbit-copied-text">Copied!</span>}
           </div>
           {/* Row 2: Sub-bar with controls */}
           <div className="orbit-subbar">
@@ -213,6 +226,10 @@ export default function InCall({
               onClose={() => setActiveSidebar(null)}
               myLang={lang}
               onLangChange={setLang}
+              translationEnabled={translationEnabled}
+              muteOriginal={muteOriginal}
+              onToggleTranslation={() => setTranslationEnabled((v) => !v)}
+              onToggleMuteOriginal={() => setMuteOriginal((v) => !v)}
             />
           )}
           {activeSidebar === "chat" && (
@@ -228,6 +245,8 @@ export default function InCall({
           onLeave={onLeave}
           activeSidebar={activeSidebar}
           onToggleSidebar={toggleSidebar}
+          speakerMuted={speakerMuted}
+          onToggleSpeaker={() => setSpeakerMuted((v) => !v)}
         />
       </div>
 

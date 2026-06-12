@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
 import { useMemo } from "react";

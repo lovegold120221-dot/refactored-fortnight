@@ -2,8 +2,8 @@
 
 Develop this Orbit Meeting main page reference — Zoom-style meeting room first, with Orbit translation built in.
 
-#### `/api/translate`
-Orbit Meeting — Main Page Lock 🛰️
+## Orbit Meeting — Main Page Lock 🛰️
+
 Orbit Meeting main page = full meeting room UI.
 
 Screen Share is only one toolbar icon.

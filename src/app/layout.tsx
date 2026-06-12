@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Orbit Meeting",
-  description: "Real-time meeting translation powered by Eburon AI.",
+  description: "Real-time meeting translation .",
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",

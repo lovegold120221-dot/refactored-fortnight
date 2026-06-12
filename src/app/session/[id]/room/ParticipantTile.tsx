@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -138,8 +139,8 @@ export default function ParticipantTile({
         </div>
       )}
 
-      <div className="tile-name" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="tile-name tile-name-wrapper">
+        <div className="tile-name-row">
           <span className="tile-name-text">{displayName}</span>
           {langInfo && (
             <span className="tile-badge" title={langInfo.name}>
@@ -149,22 +150,22 @@ export default function ParticipantTile({
           )}
         </div>
         {isHost && (
-          <div className="tile-moderation-controls" style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+          <div className="tile-moderation-controls">
             <button 
               onClick={() => handleRequestVideo()} 
-              style={{ fontSize: '10px', padding: '2px 4px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', color: 'var(--fg)' }}
+              className="tile-mod-btn"
             >
               Req Video
             </button>
             <button 
               onClick={() => handleModerate('mute')} 
-              style={{ fontSize: '10px', padding: '2px 4px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', color: 'var(--warning)' }}
+              className="tile-mod-btn tile-mod-btn-warning"
             >
               Mute
             </button>
             <button 
               onClick={() => handleModerate('kick')} 
-              style={{ fontSize: '10px', padding: '2px 4px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', color: 'var(--error)' }}
+              className="tile-mod-btn tile-mod-btn-error"
             >
               Kick
             </button>

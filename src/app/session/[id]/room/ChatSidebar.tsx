@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
 import { useChat } from "@livekit/components-react";
@@ -38,19 +39,19 @@ export default function ChatSidebar({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       
-      <div ref={bodyRef} className="sidebar-body" style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div ref={bodyRef} className="sidebar-body chat-sidebar-body">
         {chatMessages.length === 0 ? (
-          <div style={{ color: "var(--fg-ghost)", fontSize: "12px", textAlign: "center", marginTop: "20px" }}>
+          <div className="chat-sidebar-empty">
             No messages yet. Say hi!
           </div>
         ) : (
           chatMessages.map((msg, i) => (
-            <div key={i} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--fg-tertiary)" }}>
+            <div key={i} className="chat-sidebar-msg-wrapper">
+              <div className="chat-sidebar-msg-header">
                 <strong>{msg.from?.name || msg.from?.identity || "Unknown"}</strong>
                 <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              <div style={{ background: "rgba(255, 255, 255, 0.05)", padding: "8px 12px", borderRadius: "6px", fontSize: "13px", lineHeight: 1.4 }}>
+              <div className="chat-sidebar-msg-content">
                 {msg.message}
               </div>
             </div>
@@ -58,36 +59,19 @@ export default function ChatSidebar({ onClose }: { onClose: () => void }) {
         )}
       </div>
 
-      <div style={{ padding: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.04)" }}>
-        <form onSubmit={handleSubmit} style={{ display: "flex", gap: "8px" }}>
+      <div className="chat-sidebar-footer">
+        <form onSubmit={handleSubmit} className="chat-sidebar-form">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message..."
-            style={{
-              flex: 1,
-              background: "rgba(0, 0, 0, 0.2)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "4px",
-              padding: "8px 12px",
-              color: "white",
-              fontSize: "13px"
-            }}
+            className="chat-sidebar-input"
           />
           <button 
             type="submit"
             disabled={!message.trim()}
-            style={{
-              background: message.trim() ? "var(--accent)" : "rgba(255, 255, 255, 0.1)",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              padding: "0 12px",
-              cursor: message.trim() ? "pointer" : "default",
-              fontWeight: 600,
-              fontSize: "12px"
-            }}
+            className="chat-sidebar-btn"
           >
             Send
           </button>

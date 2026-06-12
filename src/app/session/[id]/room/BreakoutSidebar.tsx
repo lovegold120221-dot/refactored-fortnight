@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
 import { useParticipants, useRoomContext } from "@livekit/components-react";
@@ -78,24 +79,17 @@ export default function BreakoutSidebar({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       
-      <div className="sidebar-body" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
-        <p style={{ fontSize: "13px", color: "var(--fg-secondary)", lineHeight: 1.5 }}>
+      <div className="sidebar-body sidebar-body-breakout">
+        <p className="breakout-desc">
           Automatically divide the {participants.length} current participants into 2 breakout rooms.
         </p>
 
         <button 
           onClick={handleStartBreakout}
           disabled={loading || participants.length === 0}
-          style={{
-            background: "var(--accent)",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            padding: "10px",
-            fontWeight: 600,
-            cursor: loading ? "wait" : "pointer",
-            opacity: loading || participants.length === 0 ? 0.5 : 1
-          }}
+          className="btn btn-accent breakout-btn"
+          data-loading={loading ? "true" : "false"}
+          data-disabled={participants.length === 0 ? "true" : "false"}
         >
           Start Breakout Rooms
         </button>
@@ -103,16 +97,8 @@ export default function BreakoutSidebar({ onClose }: { onClose: () => void }) {
         <button 
           onClick={handleEndBreakout}
           disabled={loading}
-          style={{
-            background: "rgba(255, 255, 255, 0.1)",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            padding: "10px",
-            fontWeight: 600,
-            cursor: loading ? "wait" : "pointer",
-            opacity: loading ? 0.5 : 1
-          }}
+          className="btn btn-dark breakout-btn"
+          data-loading={loading ? "true" : "false"}
         >
           End Breakout Rooms
         </button>
