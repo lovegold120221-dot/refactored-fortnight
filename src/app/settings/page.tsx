@@ -1,4 +1,3 @@
-/* eslint-disable react/forbid-dom-props */
 "use client";
 
 import { useUser } from "@/context/UserContext";
@@ -167,6 +166,7 @@ export default function SettingsPage() {
                     className="settings-select"
                     value={theme}
                     onChange={(e) => { setTheme(e.target.value as "light" | "dark"); markDirty(); }}
+                    aria-label="Theme"
                   >
                     <option value="dark">Dark</option>
                     <option value="light">Light</option>
@@ -179,6 +179,7 @@ export default function SettingsPage() {
                     className="settings-select"
                     value={defaultLanguage}
                     onChange={(e) => { setDefaultLanguage(e.target.value); markDirty(); }}
+                    aria-label="Language"
                   >
                     {PICKER_LANGUAGES.map(lang => (
                       <option key={lang.code} value={lang.code}>{lang.flag} {lang.name}</option>
@@ -203,6 +204,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={autoJoinAudio}
                       onChange={(e) => { setAutoJoinAudio(e.target.checked); markDirty(); }}
+                      aria-label="Auto-join audio"
                     />
                     <span className="slider" />
                   </label>
@@ -218,6 +220,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={noiseSuppression}
                       onChange={(e) => { setNoiseSuppression(e.target.checked); markDirty(); }}
+                      aria-label="Background noise suppression"
                     />
                     <span className="slider" />
                   </label>
@@ -253,6 +256,7 @@ export default function SettingsPage() {
                         type="checkbox"
                         checked={cameraOffOnJoin}
                         onChange={(e) => { setCameraOffOnJoin(e.target.checked); markDirty(); }}
+                        aria-label="Turn off camera when joining"
                       />
                       <span className="slider" />
                     </label>
@@ -273,6 +277,7 @@ export default function SettingsPage() {
                     className="settings-select"
                     value={defaultLanguage}
                     onChange={(e) => { setDefaultLanguage(e.target.value); markDirty(); }}
+                    aria-label="Default target language"
                   >
                     {PICKER_LANGUAGES.map(lang => (
                       <option key={lang.code} value={lang.code}>{lang.flag} {lang.name}</option>
@@ -286,6 +291,7 @@ export default function SettingsPage() {
                     className="settings-select"
                     value={voice}
                     onChange={(e) => { setVoice(e.target.value); markDirty(); }}
+                    aria-label="Translation voice"
                   >
                     {VOICES.map(v => (
                       <option key={v.id} value={v.id}>{v.label}</option>
@@ -303,6 +309,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={showCaptions}
                       onChange={(e) => { setShowCaptions(e.target.checked); markDirty(); }}
+                      aria-label="Show captions"
                     />
                     <span className="slider" />
                   </label>
@@ -318,6 +325,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={muteOriginalAudio}
                       onChange={(e) => { setMuteOriginalAudio(e.target.checked); markDirty(); }}
+                      aria-label="Mute original audio"
                     />
                     <span className="slider" />
                   </label>
@@ -333,6 +341,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={translateAudioPlayback}
                       onChange={(e) => { setTranslateAudioPlayback(e.target.checked); markDirty(); }}
+                      aria-label="Play translated audio"
                     />
                     <span className="slider" />
                   </label>
