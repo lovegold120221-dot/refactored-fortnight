@@ -59,7 +59,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           setProfile(defaultProfile);
           
           // Attempt to insert (might fail if table doesn't exist yet, which is fine)
-          await supabase.from("profiles").upsert(defaultProfile).catch(() => {});
+          try { await supabase.from("profiles").upsert(defaultProfile); } catch { /* table may not exist */ }
         }
       } catch (err) {
         console.error("Failed to load user profile:", err);

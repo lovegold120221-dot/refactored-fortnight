@@ -18,10 +18,13 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (profile) {
-      setName(profile.name || "");
-      setTheme(profile.theme || "dark");
-      setDefaultLanguage(profile.default_language || "en");
-      setVoice(profile.voice || "Orus");
+      const t = setTimeout(() => {
+        setName(profile.name || "");
+        setTheme(profile.theme || "dark");
+        setDefaultLanguage(profile.default_language || "en");
+        setVoice(profile.voice || "Orus");
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [profile]);
 

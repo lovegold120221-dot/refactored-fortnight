@@ -279,6 +279,7 @@ function CtrlButton({
         <span className="ctrl-icon">{icon}</span>
         {hasCaret && <span className="ctrl-caret"><CaretUpIcon /></span>}
       </span>
+      <span className="ctrl-label">{label}</span>
     </button>
   );
 }

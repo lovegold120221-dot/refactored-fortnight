@@ -32,10 +32,13 @@ export default function PreFlightPage({
   // Sync profile data when loaded if local session is empty
   useEffect(() => {
     if (profile && !getSessionItem(STORAGE_KEY_NAME)) {
-      if (!displayName && profile.name) setDisplayName(profile.name);
-      if (lang === "en" && profile.default_language) setLang(profile.default_language);
+      const t = setTimeout(() => {
+        if (!displayName && profile.name) setDisplayName(profile.name);
+        if (lang === "en" && profile.default_language) setLang(profile.default_language);
+      }, 0);
+      return () => clearTimeout(t);
     }
-  }, [profile]);
+  }, [profile, displayName, lang]);
   const [shareCopied, setShareCopied] = useState(false);
 
   async function handleJoin() {

@@ -1,4 +1,8 @@
+# Orbit Meeting Main Page Reference
+
 Develop this Orbit Meeting main page reference — Zoom-style meeting room first, with Orbit translation built in.
+
+#### `/api/translate`
 Orbit Meeting — Main Page Lock 🛰️
 Orbit Meeting main page = full meeting room UI.
 
@@ -29,6 +33,9 @@ Top Bar
 Replace Zoom-style text with Orbit branding.
 Left:
 🛡 Orbit Secure
+- Send room message
+
+#### `/api/translation`
 Original Sound: Off
 Translation: English · Orus
 
@@ -36,10 +43,15 @@ Right:
 View
 Better Orbit version:
 Orbit Meeting
+- Start recording
+- Stop recording
+
+#### `/api/session`
 Translation: English · Voice: Orus
 When the user selects a female voice:
 Translation: English · Voice: Aoede
 
+#### `/api/chat`
 Participant Filmstrip
 Keep this exact behavior:
 - Small participant tiles across the top
@@ -57,7 +69,10 @@ Main center area should show:
 - Large tile
 - Thin Orbit highlight border
 - Name label bottom-left
-- Translation status badge when active
+- Pre-flight component
+
+- **Breakout Rooms:**
+Translation status badge when active
 Example overlay:
 Sean
 Speaking · Translating to English
@@ -157,6 +172,7 @@ Leda
 Main Page Final Spec
 Orbit Meeting main page must look like a Zoom-style meeting room.
 
+# Orbit Meeting Todo List
 Required:
 - Top participant filmstrip
 - Large active speaker tile

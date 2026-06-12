@@ -19,6 +19,7 @@ import ParticipantsPanel from "./ParticipantsPanel";
 import ChatSidebar from "./ChatSidebar";
 import BreakoutSidebar from "./BreakoutSidebar";
 import ActiveSpeaker from "./ActiveSpeaker";
+import Filmstrip from "./Filmstrip";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
 import { SpeakerIcon, ChevronDownIcon, GridViewIcon } from "./icons";
 
@@ -172,10 +173,14 @@ export default function InCall({
 
         {/* Stage */}
         <main className="room-stage orbit-stage">
-          <ActiveSpeaker participant={activeSpeaker} myLang={lang} />
-          {/* We hide the self view if we are the only one, since we're the active speaker */}
-          {humanRemotes.length > 0 && <SelfView />}
-          {/* Right Sidebar Slot */}
+          {/* Participant filmstrip across the top */}
+          <Filmstrip participants={humanRemotes} myLang={lang} />
+          <div className="orbit-stage-center">
+            <ActiveSpeaker participant={activeSpeaker} myLang={lang} />
+            {/* We hide the self view if we are the only one, since we're the active speaker */}
+            {humanRemotes.length > 0 && <SelfView />}
+          </div>
+          {/* Right Sidebar Panel */}
           {activeSidebar === "participants" && (
             <ParticipantsPanel 
               participants={humanRemotes} 

@@ -787,6 +787,24 @@ body {
   height: 18px;
 }
 
+.ctrl-icon-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.ctrl-caret {
+  display: inline-flex;
+  align-items: center;
+  color: var(--fg-ghost);
+}
+
+.ctrl-caret svg {
+  width: 8px;
+  height: 8px;
+}
+
 .ctrl-leave {
   margin-left: 16px;
 }
@@ -1224,6 +1242,71 @@ body {
 .sidebar-panel .tile-mic-off svg {
   width: 14px;
   height: 14px;
+}
+
+/* ——————————————————————————————————————
+   Filmstrip — horizontal participant strip
+   —————————————————————————————————————— */
+
+.filmstrip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
+  min-height: 80px;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.filmstrip .tile {
+  width: 140px;
+  min-width: 120px;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.filmstrip .tile-name {
+  font-size: 11px;
+  padding: 6px 10px;
+}
+
+.filmstrip .tile-name-text {
+  font-size: 11px;
+}
+
+.filmstrip .tile-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+}
+
+.filmstrip .tile-placeholder-initial {
+  font-size: 28px;
+}
+
+.filmstrip::-webkit-scrollbar {
+  height: 4px;
+}
+
+.filmstrip::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+/* ——————————————————————————————————————
+   Orbit stage center area (filmstrip + active speaker)
+   —————————————————————————————————————— */
+
+.orbit-stage-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* ——————————————————————————————————————

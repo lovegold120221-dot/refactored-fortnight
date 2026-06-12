@@ -6,7 +6,6 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 
 type ActivePanel = "join" | "schedule";
-type Theme = "dark" | "light";
 
 export default function Home() {
   const router = useRouter();
@@ -140,7 +139,7 @@ export default function Home() {
             <button
               className="meeting-action meeting-action--join"
               onClick={() => setActivePanel("join")}
-              aria-pressed={activePanel === "join"}
+              aria-pressed={activePanel === "join" ? "true" : "false"}
             >
               <span className="meeting-action-icon" aria-hidden>
                 <JoinIcon />
@@ -151,7 +150,7 @@ export default function Home() {
             <button
               className="meeting-action meeting-action--schedule"
               onClick={showSchedulePanel}
-              aria-pressed={activePanel === "schedule"}
+              aria-pressed={activePanel === "schedule" ? "true" : "false"}
             >
               <span className="meeting-action-icon" aria-hidden>
                 <CalendarIcon />

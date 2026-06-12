@@ -101,7 +101,14 @@ gemini-live-translate-livekit/
 **Agent** — to LiveKit Cloud Agents:
 ```bash
 cd translator
-lk agent create --secrets-file .env.local .   # first time
+lk agent create --secrets-file .env.local .   # Orbit Meeting
+
+## Setup Instructions
+
+1. Install dependencies: `pnpm install`
+2. Configure environment variables in `.env.local`
+3. Start the dev server: `npm run dev`
+
 lk agent deploy                               # subsequent deploys
 ```
 
