@@ -1364,8 +1364,8 @@ body {
   font-family: inherit;
   cursor: pointer;
   outline: none;
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238d96a6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
@@ -1711,6 +1711,26 @@ body {
 .pp-row-avatar--speaking {
   border-color: var(--accent);
   box-shadow: 0 0 8px rgba(79, 140, 255, 0.35);
+}
+
+.pp-row-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pp-reaction-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  font-size: 14px;
+  animation: reaction-pop 0.3s ease-out;
+  pointer-events: none;
+}
+
+@keyframes reaction-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .pp-row-info {
@@ -2307,6 +2327,42 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 4px;
+}
+
+/* Reaction picker popup */
+.reaction-picker {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+}
+
+.reaction-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.15s, transform 0.15s;
+  line-height: 1;
+}
+
+.reaction-btn:hover {
+  background: var(--accent-soft);
+  transform: scale(1.2);
 }
 
 .room-shell .ctrl {

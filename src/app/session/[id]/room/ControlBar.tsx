@@ -54,6 +54,20 @@ export default function ControlBar({
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
+
+  const REACTIONS = ["✋", "👍", "👏", "😂", "❤️", "🎉", "🙌", "💯"];
+
+  const sendReaction = (emoji: string) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(JSON.stringify({
+      emoji,
+      from: localParticipant.name || localParticipant.identity,
+      fromId: localParticipant.identity,
+    }));
+    localParticipant.publishData(data, { topic: "react", reliable: true });
+    onToggleHand();
+  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -275,9 +289,9 @@ export default function ControlBar({
           dataMobile="overflow"
         />
         <CtrlButton
-          active={handRaised}
-          onClick={onToggleHand}
-          label="Raise"
+          active={showReactions || handRaised}
+          onClick={() => setShowReactions((v) => !v)}
+          label="React"
           icon={<HandRaiseIcon />}
           dataMobile="overflow"
         />
@@ -354,6 +368,17 @@ export default function ControlBar({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Reaction picker */}
+      {showReactions && (
+        <div className="reaction-picker">
+          {REACTIONS.map((r) => (
+            <button key={r} className="reaction-btn" onClick={() => { sendReaction(r); setShowReactions(false); }}>
+              {r}
+            </button>
+          ))}
         </div>
       )}
 

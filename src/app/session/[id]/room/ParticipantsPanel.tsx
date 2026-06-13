@@ -41,6 +41,7 @@ export default function ParticipantsPanel({
   roomName,
   onClose,
   onToggleChat,
+  reactions,
 }: {
   localParticipant: LocalParticipant | undefined;
   participants: RemoteParticipant[];
@@ -49,6 +50,7 @@ export default function ParticipantsPanel({
   roomName: string;
   onClose: () => void;
   onToggleChat: () => void;
+  reactions: Map<string, { emoji: string; ts: number }>;
 }) {
   const { microphoneTrack, cameraTrack } = useLocalParticipant();
   const [search, setSearch] = useState("");
@@ -187,6 +189,7 @@ export default function ParticipantsPanel({
             onToggle={() => setExpanded(expanded === row.identity ? null : row.identity)}
             myLang={myLang}
             isSpeaking={speakingSet.has(row.identity)}
+            reaction={reactions.get(row.identity)}
           />
         ))}
       </div>
@@ -244,11 +247,13 @@ function SelfRow({
 function ParticipantRow({
   identity, name, initial, lang, micOn, camOn, handRaised, screenSharing,
   participant, isHost, roomName, expanded, onToggle, myLang, isSpeaking,
+  reaction,
 }: {
   identity: string; name: string; initial: string; lang?: string;
   micOn: boolean; camOn: boolean; handRaised: boolean; screenSharing: boolean;
   participant: RemoteParticipant; isHost: boolean; roomName: string;
   expanded: boolean; onToggle: () => void; myLang: string; isSpeaking: boolean;
+  reaction?: { emoji: string; ts: number };
 }) {
   const langInfo = lang ? getLanguageByCode(lang) : undefined;
   const needsTranslation = myLang !== "none" && !!lang && lang !== myLang;
@@ -264,8 +269,13 @@ function ParticipantRow({
   return (
     <div className={`pp-row ${isSpeaking ? "pp-row--speaking" : ""} ${expanded ? "pp-row--expanded" : ""}`}>
       <div className="pp-row-main">
-        <div className={`pp-row-avatar ${isSpeaking ? "pp-row-avatar--speaking" : ""}`}>
-          {initial}
+        <div className="pp-row-avatar-wrapper">
+          <div className={`pp-row-avatar ${isSpeaking ? "pp-row-avatar--speaking" : ""}`}>
+            {initial}
+          </div>
+          {reaction && (
+            <span className="pp-reaction-badge">{reaction.emoji}</span>
+          )}
         </div>
         <div className="pp-row-info">
           <div className="pp-row-name-row">

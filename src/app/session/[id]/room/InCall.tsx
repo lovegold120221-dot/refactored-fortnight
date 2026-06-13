@@ -56,6 +56,29 @@ export default function InCall({
     } catch (e) {}
   });
 
+  const [reactions, setReactions] = useState<Map<string, { emoji: string; ts: number }>>(new Map());
+
+  useDataChannel("react", (msg) => {
+    try {
+      const payload = JSON.parse(new TextDecoder().decode(msg.payload));
+      if (payload.emoji && payload.fromId) {
+        setReactions((prev) => {
+          const next = new Map(prev);
+          next.set(payload.fromId, { emoji: payload.emoji, ts: Date.now() });
+          return next;
+        });
+        // Auto-clear after 4 seconds
+        setTimeout(() => {
+          setReactions((prev) => {
+            const next = new Map(prev);
+            next.delete(payload.fromId);
+            return next;
+          });
+        }, 4000);
+      }
+    } catch (e) {}
+  });
+
   useDataChannel("breakout", (msg) => {
     try {
       const payload = JSON.parse(new TextDecoder().decode(msg.payload));
@@ -222,6 +245,7 @@ export default function InCall({
               roomName={room.name}
               onClose={() => setActiveSidebar(null)}
               onToggleChat={() => toggleSidebar("chat")}
+              reactions={reactions}
             />
           )}
           {activeSidebar === "translation" && (
