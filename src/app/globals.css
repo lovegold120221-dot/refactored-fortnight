@@ -1535,7 +1535,43 @@ body {
 .pp-self-top {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+.pp-self-icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.pp-self-icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pp-self-icon-btn:hover {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.pp-self-icon-btn--off {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.pp-self-icon-btn--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .pp-avatar {
@@ -1576,77 +1612,6 @@ body {
   letter-spacing: 0.06em;
   color: var(--accent);
   opacity: 0.8;
-}
-
-.pp-self-indicators {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.pp-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
-}
-
-.pp-indicator--on {
-  color: var(--success);
-}
-
-.pp-indicator--off {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--fg-ghost);
-}
-
-.pp-indicator svg {
-  width: 14px;
-  height: 14px;
-}
-
-.pp-self-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-  padding-left: 46px;
-}
-
-.pp-action-icon {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface-strong);
-  color: var(--fg-secondary);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.pp-action-icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.pp-action-icon:hover {
-  background: var(--accent-soft);
-  color: var(--fg);
-}
-
-.pp-action-icon--danger {
-  border-color: var(--warning);
-  color: var(--warning);
-}
-
-.pp-action-icon--active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: var(--accent);
 }
 
 /* Participant rows */
@@ -1812,8 +1777,7 @@ body {
 }
 
 /* Icon sizing inside panel rows */
-.pp-row-icons svg,
-.pp-indicator svg {
+.pp-row-icons svg {
   width: 14px;
   height: 14px;
 }

@@ -242,32 +242,22 @@ function SelfRow({
           <span className="pp-name">{name}</span>
           <span className="pp-role-tag">You</span>
         </div>
-        <div className="pp-self-indicators">
-          <span className={`pp-indicator ${micOn ? "pp-indicator--on" : "pp-indicator--off"}`}>
-            {micOn ? <MicOnIcon /> : <MicOffIcon />}
-          </span>
-          <span className={`pp-indicator ${camOn ? "pp-indicator--on" : "pp-indicator--off"}`}>
-            {camOn ? <CamOnIcon /> : <CamOffIcon />}
-          </span>
-        </div>
-      </div>
-      <div className="pp-self-actions">
         <button
-          className={`pp-action-icon ${!micOn ? "pp-action-icon--danger" : ""}`}
+          className={`pp-self-icon-btn ${!micOn ? "pp-self-icon-btn--off" : ""}`}
           onClick={onToggleMic}
           title={micOn ? "Mute" : "Unmute"}
         >
           {micOn ? <MicOnIcon /> : <MicOffIcon />}
         </button>
         <button
-          className={`pp-action-icon ${!camOn ? "pp-action-icon--danger" : ""}`}
+          className={`pp-self-icon-btn ${!camOn ? "pp-self-icon-btn--off" : ""}`}
           onClick={onToggleCam}
           title={camOn ? "Turn off camera" : "Turn on camera"}
         >
           {camOn ? <CamOnIcon /> : <CamOffIcon />}
         </button>
         <button
-          className={`pp-action-icon ${handRaised ? "pp-action-icon--active" : ""}`}
+          className={`pp-self-icon-btn ${handRaised ? "pp-self-icon-btn--active" : ""}`}
           onClick={onToggleHand}
           title={handRaised ? "Lower hand" : "Raise hand"}
         >
