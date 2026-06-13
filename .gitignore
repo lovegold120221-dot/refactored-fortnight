@@ -38,6 +38,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# pnpm store (Vercel upload shield — this is gigabytes of cache)
+/.pnpm-store/
+
 # electron
 /dist-electron/
 

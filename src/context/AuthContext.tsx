@@ -42,7 +42,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    // Update state synchronously so callers can redirect without waiting
+    // for the async onAuthStateChange event.
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.user);
+      setLoading(false);
+    }
     return { error };
   };
 
