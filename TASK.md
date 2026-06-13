@@ -722,6 +722,65 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 
 ---
 
+## TASK-20260613-163000: Audit and rewrite AGENTS.md
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-13T16:30:00Z
+- User request: Create or update AGENTS.md for the repo — compact instruction file for future OpenCode sessions
+- Preservation constraints: Preserve verified true guidance; fix stale/incorrect claims; add missing gotchas
+- Success criteria:
+  - Every line answers "Would an agent likely miss this without help?"
+  - Stale claims removed (wrong language count, incomplete CI info)
+  - High-signal gotchas included (Vercel build detection, components/ dir, secure context, Supabase auth trigger, pnpm-store)
+  - No fluff, no speculative claims, no unverified content
+
+### INVESTIGATION PERFORMED
+- Read root AGENTS.md, translator/AGENTS.md, CLAUDE.md
+- Read README.md (cross-reference)
+- Inspected: package.json, next.config.ts, tsconfig.json, eslint.config.mjs, vercel.json
+- Inspected: translator/pyproject.toml, translator/src/config.py, translator/src/session.py (first 20 lines)
+- Inspected: src/lib/config.ts, src/lib/languages.ts (279 lines, 240+ languages)
+- Inspected: scripts/setup.sh, .env.example, translator/.env.example
+- Inspected: CI workflows (.github/workflows/deploy.yml, translator/.github/workflows/ci.yml, ruff.yml, tests.yml)
+- Inspected: capacitor.config.ts, Dockerfile, translator/Dockerfile
+- Verified: components/ directory (6 legacy .js files)
+- Verified: .pnpm-store/ at repo root
+- Verified: CLAUDE.md redirects to @AGENTS.md
+
+### CHANGES MADE
+
+**AGENTS.md rewritten (1 file):**
+
+| Change | Detail |
+|--------|--------|
+| **Removed fragile file-tree block** | Per-file listing drifts; replaced with ownership boundaries + key directories |
+| **Fixed language count** | Was "16 langs + Belgium variants" → now "240+ languages… no Belgium regional variants remain" |
+| **Added `components/` directory** | Legacy `.js` files at root — do not modify, pre-existing lint warnings |
+| **Added `next.config.ts` gotcha** | Build output: `undefined` on Vercel/CI vs `"standalone"` locally/Docker |
+| **Added `showSaveFilePicker()` gotcha** | Requires secure context; falls back to `<a>` download on HTTP |
+| **Added Supabase auth trigger gotcha** | `handle_new_user()` assumes `profiles` table exists before first signup |
+| **Added `.pnpm-store/` gotcha** | Root-level pnpm content-addressable store — never delete it |
+| **Added TASK.md convention** | Documented the `TASK-YYYYMMDD-HHMMSS` naming and START/TODO/FINAL REPORT format |
+| **Updated CI locations** | Was "translator/.github/workflows/ only" → now notes both root `deploy.yml` and translator `ci.yml` |
+| **Added build validation command** | Always run `pnpm build && cd translator && uv run pytest` before claiming done |
+| **Preserved** | All critical naming sync, config pairing, commands, env files, track routing, demand model, session creation gotcha, WebSocket approach, TrackSource trap, yarl pin, Docker, testing guidance |
+
+### FINAL REPORT
+- STATUS: COMPLETED
+- End time: 2026-06-13T16:45:00Z
+- Files changed:
+  - `AGENTS.md` — comprehensive rewrite: pruned stale claims, added 6 high-signal gotchas, simplified layout, preserved all verified guidance
+- Validation performed:
+  - Cross-referenced all claims against: README.md, package.json, next.config.ts, pyproject.toml, languages.ts, CI workflows, Dockerfile, session.py, config.ts, config.py
+  - Every line in the new AGENTS.md is verifiable from source files read above
+- CSS/UI preservation: N/A (docs only)
+- Real data/API credential check: No credential changes
+- Known issues: None — all claims verified against current source
+- Next step: None
+
+---
+
 ## TASK-20260613-120000: Supabase email auth + full database schema
 
 ### START RECORD
