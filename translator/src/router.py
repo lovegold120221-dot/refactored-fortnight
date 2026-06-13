@@ -231,18 +231,28 @@ class TranslationRouter:
 
     def _active_speakers(self) -> list[tuple[str, str, str, bool]]:
         """List of (identity, track_sid, lang, is_screen_share) for speakers
-        that have enabled audio tracks."""
+        that have enabled audio tracks.
+
+        Screen share audio is always included regardless of the speaker's
+        declared language — shared content (e.g. a video in a browser tab)
+        may be in any language, so skipping it would silence translation.
+        """
         out: list[tuple[str, str, str, bool]] = []
         for p in self._room.remote_participants.values():
-            lang = (p.attributes or {}).get(PARTICIPANT_LANG_ATTR)
-            if not lang or lang == NATIVE_LANG:
-                # Without a declared language, we can't safely translate.
-                continue
+            lang = (p.attributes or {}).get(PARTICIPANT_LANG_ATTR) or ""
             tracks = self._speaker_tracks.get(p.identity, {})
             for track_sid, track in tracks.items():
-                if self._is_track_unmuted(p, track_sid):
-                    is_ss = track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
-                    out.append((p.identity, track_sid, lang, is_ss))
+                if not self._is_track_unmuted(p, track_sid):
+                    continue
+                is_ss = track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                if is_ss:
+                    # Screen share audio: always include. The content language
+                    # is independent of the sharer's declared lang attribute.
+                    out.append((p.identity, track_sid, lang or "und", True))
+                elif lang and lang != NATIVE_LANG:
+                    # Mic audio: only include when the speaker has a declared
+                    # language that differs from the native sentinel.
+                    out.append((p.identity, track_sid, lang, False))
         return out
 
     def _is_track_unmuted(self, p: rtc.RemoteParticipant, track_sid: str) -> bool:

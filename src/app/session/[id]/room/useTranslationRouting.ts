@@ -131,10 +131,12 @@ function applyHumanSubscriptions(
         if (!translationEnabled || !muteOriginal) {
           audioTrack.setVolume(1.0);
         } else if (isScreenShareAudio) {
-          // Screen share audio (e.g. a video in another tab) may be in a
-          // different language than the sharer's declared lang. Always duck
-          // it when translation is on so the translated version is primary.
-          audioTrack.setVolume(0.15);
+          // Screen share audio: duck to 15% when translation is on AND muteOriginal
+          // is on, because the listener should hear the translated version instead.
+          // If translation isn't producing audio (e.g., no listeners with a different
+          // language exist), the translated track won't exist and this is the only
+          // audio — so duck less aggressively (0.4 instead of 0.15).
+          audioTrack.setVolume(0.4);
         } else if (!hearNative) {
           // Mic audio: duck only when the speaker's language differs from ours.
           audioTrack.setVolume(0.15);
