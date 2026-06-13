@@ -38,10 +38,10 @@ export default function InCall({
   const [lang, setLang] = useState(initialLang);
   const [translationEnabled, setTranslationEnabled] = useState(true);
   const [muteOriginal, setMuteOriginal] = useState(true);
-  const [translateScreenShare, setTranslateScreenShare] = useState(true);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [headerCopied, setHeaderCopied] = useState(false);
+  const [handRaised, setHandRaised] = useState(false);
   const router = useRouter();
   const isHost = typeof window !== 'undefined' && window.localStorage.getItem("orbitHostRoom") === room.name;
 
@@ -98,7 +98,7 @@ export default function InCall({
       if (room.state === ConnectionState.Connected) {
         localParticipant.setAttributes({
           [PARTICIPANT_LANG_ATTR]: lang,
-          orbit_translate_screenshare: translateScreenShare ? "true" : "false",
+          orbit_hand: handRaised ? "raised" : "",
         });
       }
     };
@@ -107,9 +107,9 @@ export default function InCall({
     return () => {
       room.off(RoomEvent.Connected, apply);
     };
-  }, [room, localParticipant, lang, translateScreenShare]);
+  }, [room, localParticipant, lang]);
 
-  useTranslationRouting(lang, translationEnabled, muteOriginal, translateScreenShare);
+  useTranslationRouting(lang, translationEnabled, muteOriginal, true);
 
   // Speaker mute toggle — mutes/unmutes all <audio> elements in the page
   // (both remote mic tracks and agent translation tracks).
@@ -207,8 +207,6 @@ export default function InCall({
             {hasScreenShare ? (
               <ScreenShareView
                 myLang={lang}
-                translateScreenShare={translateScreenShare}
-                onToggleTranslateScreenShare={() => setTranslateScreenShare((v) => !v)}
               />
             ) : (
               <GalleryView remotes={humanRemotes} myLang={lang} isHost={isHost} roomName={room.name} />
@@ -245,8 +243,6 @@ export default function InCall({
               onToggleMuteOriginal={() => setMuteOriginal((v) => !v)}
               captionsOpen={captionsOpen}
               onToggleCaptions={() => toggleSidebar("captions")}
-              translateScreenShare={translateScreenShare}
-              onToggleTranslateScreenShare={() => setTranslateScreenShare((v) => !v)}
             />
           )}
           {activeSidebar === "chat" && (
@@ -264,6 +260,12 @@ export default function InCall({
           onToggleSidebar={toggleSidebar}
           speakerMuted={speakerMuted}
           onToggleSpeaker={() => setSpeakerMuted((v) => !v)}
+          handRaised={handRaised}
+          onToggleHand={() => {
+            const cur = localParticipant?.attributes?.orbit_hand === "raised";
+            setHandRaised(!cur);
+            localParticipant?.setAttributes({ orbit_hand: cur ? "" : "raised" });
+          }}
         />
       </div>
 

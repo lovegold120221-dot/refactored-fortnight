@@ -25,6 +25,7 @@ import {
   SettingsIcon,
   LinkIcon,
   CaretUpIcon,
+  HandRaiseIcon,
 } from "./icons";
 
 export default function ControlBar({
@@ -33,12 +34,16 @@ export default function ControlBar({
   onToggleSidebar,
   speakerMuted,
   onToggleSpeaker,
+  handRaised,
+  onToggleHand,
 }: {
   onLeave: () => void;
   activeSidebar: "participants" | "captions" | "translation" | "chat" | "breakout" | null;
   onToggleSidebar: (sidebar: "participants" | "captions" | "translation" | "chat" | "breakout") => void;
   speakerMuted: boolean;
   onToggleSpeaker: () => void;
+  handRaised: boolean;
+  onToggleHand: () => void;
 }) {
   const { localParticipant, microphoneTrack, cameraTrack } = useLocalParticipant();
   const room = useRoomContext();
@@ -275,6 +280,13 @@ export default function ControlBar({
           onClick={onToggleSpeaker}
           label="Speaker"
           icon={speakerMuted ? <SpeakerOffIcon /> : <SpeakerIcon />}
+          dataMobile="overflow"
+        />
+        <CtrlButton
+          active={handRaised}
+          onClick={onToggleHand}
+          label="Raise"
+          icon={<HandRaiseIcon />}
           dataMobile="overflow"
         />
         <CtrlButton

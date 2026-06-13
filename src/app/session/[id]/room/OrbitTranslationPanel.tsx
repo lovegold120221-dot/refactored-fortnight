@@ -20,8 +20,6 @@ export default function OrbitTranslationPanel({
   onToggleMuteOriginal,
   captionsOpen,
   onToggleCaptions,
-  translateScreenShare,
-  onToggleTranslateScreenShare,
 }: {
   onClose: () => void;
   myLang: string;
@@ -32,8 +30,6 @@ export default function OrbitTranslationPanel({
   onToggleMuteOriginal: () => void;
   captionsOpen: boolean;
   onToggleCaptions: () => void;
-  translateScreenShare: boolean;
-  onToggleTranslateScreenShare: () => void;
 }) {
   const [voice, setVoice] = useState("male1");
 
@@ -85,25 +81,6 @@ export default function OrbitTranslationPanel({
 
       {/* Body: transcription + translation text area */}
       <div className="sidebar-body">
-        <div className="otp-transcript-area">
-          <div className="otp-transcript-box otp-transcript-source">
-            <span className="otp-transcript-label">Speaker</span>
-            <p className="otp-transcript-text">
-              Source transcription will appear here as people speak...
-            </p>
-          </div>
-          <div className="otp-transcript-box otp-transcript-target">
-            <span className="otp-transcript-label">
-              {PICKER_LANGUAGES.find((l) => l.code === myLang)?.name || myLang}
-            </span>
-            <p className="otp-transcript-text">
-              Translation will appear here...
-            </p>
-          </div>
-        </div>
-
-        <hr className="otp-divider" />
-
         <div className="otp-section">
           <h4 className="otp-label">Output</h4>
           <label className="otp-checkbox-label">
@@ -113,10 +90,6 @@ export default function OrbitTranslationPanel({
           <label className="otp-checkbox-label">
             <input type="checkbox" checked={muteOriginal} onChange={onToggleMuteOriginal} />
             <span>Duck original audio {muteOriginal ? "15%" : "Off"}</span>
-          </label>
-          <label className="otp-checkbox-label">
-            <input type="checkbox" checked={translateScreenShare} onChange={onToggleTranslateScreenShare} />
-            <span>Translate shared screen audio</span>
           </label>
         </div>
       </div>

@@ -17,12 +17,8 @@ import { getLanguageByCode } from "@/lib/languages";
  */
 export default function ScreenShareView({
   myLang,
-  translateScreenShare,
-  onToggleTranslateScreenShare,
 }: {
   myLang: string;
-  translateScreenShare: boolean;
-  onToggleTranslateScreenShare: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const room = useRoomContext();
@@ -141,15 +137,7 @@ export default function ScreenShareView({
           )}
         </div>
         <div className="screen-share-overlay-bottom">
-          <button
-            className={`screen-share-translate-btn ${translateScreenShare ? "screen-share-translate-btn--on" : ""}`}
-            onClick={onToggleTranslateScreenShare}
-            title={translateScreenShare ? "Translation ON — click to disable" : "Translation OFF — click to enable"}
-          >
-            <span className="ss-translate-icon">{translateScreenShare ? "🔊" : "🔇"}</span>
-            <span>{translateScreenShare ? "Translating" : "Not translating"}</span>
-          </button>
-          {needsTranslation && translateScreenShare && (
+          {needsTranslation && (
             <span className="screen-share-status">
               → {getLanguageByCode(myLang)?.name || myLang} &middot; Orus
             </span>

@@ -211,7 +211,6 @@ function SelfRow({
         <div className="pp-avatar">{initial}</div>
         <div className="pp-self-info">
           <span className="pp-name">{name}</span>
-          <span className="pp-role-tag">You</span>
           {isHost && <span className="pp-badge pp-badge--role">Host</span>}
         </div>
         <button
@@ -227,13 +226,6 @@ function SelfRow({
           title={camOn ? "Turn off camera" : "Turn on camera"}
         >
           {camOn ? <CamOnIcon /> : <CamOffIcon />}
-        </button>
-        <button
-          className={`pp-self-icon-btn ${handRaised ? "pp-self-icon-btn--active" : ""}`}
-          onClick={onToggleHand}
-          title={handRaised ? "Lower hand" : "Raise hand"}
-        >
-          <HandRaiseIcon />
         </button>
         <button
           className="pp-self-icon-btn"
