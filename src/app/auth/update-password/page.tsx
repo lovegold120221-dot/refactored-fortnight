@@ -42,7 +42,7 @@ export default function UpdatePasswordPage() {
       <main className="auth-shell">
         <div className="auth-card">
           <div className="auth-brand">
-            <span className="entry-brand-mark" aria-hidden />
+            <img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" />
             <span>Orbit Meeting</span>
           </div>
           <h1 className="auth-title">Password updated</h1>
@@ -59,7 +59,7 @@ export default function UpdatePasswordPage() {
     <main className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
-          <span className="entry-brand-mark" aria-hidden />
+          <img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" />
           <span>Orbit Meeting</span>
         </div>
         <h1 className="auth-title">Set new password</h1>

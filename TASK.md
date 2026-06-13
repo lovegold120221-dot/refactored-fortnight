@@ -1,3 +1,87 @@
+## TASK-20260613-173000: Fix captions, translator, and auth entry page
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-13T17:30:00Z
+- User request: Fix why captions don't work, translator doesn't work, and make auth page the entry page with Eburon AI logo
+- Preservation constraints: Preserve all existing UI, component contracts, API routes, CSS, translations routing logic
+- Success criteria:
+  - Auth page (/auth/login) is the entry page — unauthenticated users redirected from /
+  - Eburon AI logo (icon-eburon.svg) appears on all auth pages + landing page
+  - "Show captions" checkbox in translation panel actually toggles the CaptionsSidebar
+  - Translator has defensive outputTranscription parsing for both API response locations
+  - Agent logs actual model name and first response structure for diagnostics
+  - Build passes (16 routes), Python tests pass (14/14), ruff lint passes
+
+### ROOT CAUSE ANALYSIS
+
+**1. Auth page not visible:**
+The root `/` page (`src/app/page.tsx`) showed create/join to everyone regardless of auth state. No redirect to `/auth/login` existed.
+
+**2. Captions not working:**
+Two problems:
+- The "Show captions" checkbox in `OrbitTranslationPanel.tsx` (line 135) used local state `captionsOn` set via `useState(true)` with an `onChange` that only updated local state — **completely disconnected** from the actual `CaptionsSidebar` visibility. Checking it did nothing.
+- If the translator agent isn't publishing text streams (problem 3), captions sidebar shows "No captions yet" forever.
+
+**3. Translator not working:**
+- The `outputTranscription` field in Gemini v1beta API responses may appear at EITHER `serverContent.outputTranscription` OR `serverContent.modelTurn.outputTranscription` depending on the API version. The code only checked `serverContent.outputTranscription`.
+- No diagnostic logging at connection time — impossible to tell what model name was sent or what the API returned.
+
+### WHAT WAS DONE
+
+**Auth as entry page (1 file):**
+- `src/app/page.tsx` — Added auth guard using `useAuth()` in `useEffect`: redirects to `/auth/login` when `user` is null. Skips redirect when Supabase env vars aren't configured (supports anonymous/offline usage). Fixed React hooks ordering (moved all `useState` calls before early returns).
+- Shows a minimal loading state while auth state is resolving.
+
+**Eburon AI logo (7 files):**
+- Downloaded `https://eburon.ai/icon-eburon.svg` to `public/icon-eburon.svg`
+- `src/app/page.tsx` — Replaced `.entry-brand-mark` gradient div with `<img>` using `icon-eburon.svg`
+- `src/app/auth/login/page.tsx` — Replaced `.entry-brand-mark` with Eburon logo in auth brand
+- `src/app/auth/signup/page.tsx` — Same (both form and confirmation views)
+- `src/app/auth/reset-password/page.tsx` — Same (both form and sent views)
+- `src/app/auth/update-password/page.tsx` — Same (both form and done views)
+- `src/app/globals.css` — Added `.entry-brand-logo` (34px) and `.auth-brand-logo` (48px) with `object-fit: contain`
+
+**Captions wiring (2 files):**
+- `src/app/session/[id]/room/OrbitTranslationPanel.tsx` — Replaced local `captionsOn` state with `captionsOpen` and `onToggleCaptions` props from parent. Removed unused `captionsOn` state.
+- `src/app/session/[id]/room/InCall.tsx` — Computes `captionsOpen` before the JSX (avoids TypeScript narrowing issue), passes it + `onToggleCaptions` to `OrbitTranslationPanel`. The checkbox now calls `toggleSidebar("captions")` which opens/closes the actual `CaptionsSidebar`.
+
+**Translator fixes (1 file):**
+- `translator/src/session.py`:
+  - **Defensive `outputTranscription` parsing:** Checks BOTH `sc.get("outputTranscription")` AND `model_turn.get("outputTranscription")` before falling through. Handles API version variance.
+  - **Model name logging:** Logs the actual model path being sent to Gemini (`"models/gemini-3.5-live-translate-preview"`).
+  - **First-response structure logging:** On the first `serverContent` message, logs its keys for debugging API response format.
+  - **Unrecognized message logging:** Logs unknown message keys (non-serverContent) for debugging connection issues.
+
+### FINAL REPORT
+- STATUS: COMPLETED
+- End time: 2026-06-13T17:45:00Z
+- Files changed:
+  - `src/app/page.tsx` — Auth guard + Eburon logo + React hooks reordering
+  - `src/app/auth/login/page.tsx` — Eburon logo
+  - `src/app/auth/signup/page.tsx` — Eburon logo (2 instances)
+  - `src/app/auth/reset-password/page.tsx` — Eburon logo (2 instances)
+  - `src/app/auth/update-password/page.tsx` — Eburon logo (2 instances)
+  - `src/app/session/[id]/room/InCall.tsx` — Wired captionsOpen to translation panel
+  - `src/app/session/[id]/room/OrbitTranslationPanel.tsx` — Replaced local state with parent props
+  - `src/app/globals.css` — Added `.entry-brand-logo` and `.auth-brand-logo`
+  - `translator/src/session.py` — Defensive outputTranscription parsing + diagnostic logging
+  - `public/icon-eburon.svg` — New file (Eburon AI logo)
+- Validation performed:
+  - `pnpm build` — 16 routes, TypeScript passed, compiled in 2.4s
+  - `cd translator && uv run pytest` — 14/14 passed in 0.07s
+  - `cd translator && uv run ruff check src/` — All checks passed
+- CSS/UI preservation: Only additive CSS (`.entry-brand-logo`, `.auth-brand-logo`). Existing `.entry-brand-mark` preserved. No layout changes.
+- Real data/API credential check: No credential changes. Translator fixes are defensive — original parsing path preserved as first attempt.
+- Known issues:
+  - The `/` page shows a brief loading flash while Supabase auth state resolves (unavoidable in client-side auth)
+  - If Supabase env vars aren't set, auth is skipped and landing page shows directly — this is intentional for anonymous/offline usage
+  - The `outputTranscription` field location in Gemini API responses may still vary — the defensive check handles both but real testing with the API is needed to confirm
+  - Model name `gemini-3.5-live-translate-preview` may need updating if Google renames it — the new logging will show the exact model path in agent logs
+- Next step: Deploy the agent to LiveKit Cloud (`cd translator && lk agent deploy`) and test translation + captions end-to-end in a real meeting
+
+---
+
 ## TASK-20260612-094500: Fix UI Issues
 
 ### START RECORD

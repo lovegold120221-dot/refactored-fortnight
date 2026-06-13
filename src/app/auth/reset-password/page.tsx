@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
       <main className="auth-shell">
         <div className="auth-card">
           <div className="auth-brand">
-            <span className="entry-brand-mark" aria-hidden />
+            <img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" />
             <span>Orbit Meeting</span>
           </div>
           <h1 className="auth-title">Check your email</h1>
@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
     <main className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
-          <span className="entry-brand-mark" aria-hidden />
+          <img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" />
           <span>Orbit Meeting</span>
         </div>
         <h1 className="auth-title">Reset password</h1>

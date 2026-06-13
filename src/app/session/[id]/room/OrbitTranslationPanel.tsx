@@ -21,6 +21,8 @@ export default function OrbitTranslationPanel({
   muteOriginal,
   onToggleTranslation,
   onToggleMuteOriginal,
+  captionsOpen,
+  onToggleCaptions,
 }: {
   onClose: () => void;
   myLang: string;
@@ -29,9 +31,10 @@ export default function OrbitTranslationPanel({
   muteOriginal: boolean;
   onToggleTranslation: () => void;
   onToggleMuteOriginal: () => void;
+  captionsOpen: boolean;
+  onToggleCaptions: () => void;
 }) {
   const [voice, setVoice] = useState("orus");
-  const [captionsOn, setCaptionsOn] = useState(true);
 
   return (
     <div className="sidebar-panel">
@@ -132,7 +135,7 @@ export default function OrbitTranslationPanel({
             <span>Play translated audio to me</span>
           </label>
           <label className="otp-checkbox-label">
-            <input type="checkbox" checked={captionsOn} onChange={(e) => setCaptionsOn(e.target.checked)} />
+            <input type="checkbox" checked={captionsOpen} onChange={onToggleCaptions} />
             <span>Show captions</span>
           </label>
           <label className="otp-checkbox-label">

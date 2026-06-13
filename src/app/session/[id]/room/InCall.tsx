@@ -133,6 +133,7 @@ export default function InCall({
   const hasScreenShare = screenShareTracks.length > 0;
 
   const allParticipants = [localParticipant, ...humanRemotes];
+  const captionsOpen = activeSidebar === "captions";
 
   return (
     <div className="room-shell">
@@ -212,6 +213,8 @@ export default function InCall({
               muteOriginal={muteOriginal}
               onToggleTranslation={() => setTranslationEnabled((v) => !v)}
               onToggleMuteOriginal={() => setMuteOriginal((v) => !v)}
+              captionsOpen={captionsOpen}
+              onToggleCaptions={() => toggleSidebar("captions")}
             />
           )}
           {activeSidebar === "chat" && (

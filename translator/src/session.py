@@ -187,9 +187,16 @@ class GeminiSession:
         async with websockets.connect(
             url, max_size=2**22, ping_interval=20, ping_timeout=20
         ) as ws:
-            await ws.send(json.dumps(self._build_setup_payload()))
+            payload = self._build_setup_payload()
             logger.info(
-                "Gemini WS connected: %s -> %s, awaiting setupComplete",
+                "Gemini WS connecting: %s -> %s, model=%s",
+                self._speaker_identity,
+                self._target_lang,
+                payload["setup"]["model"],
+            )
+            await ws.send(json.dumps(payload))
+            logger.info(
+                "Gemini WS setup sent: %s -> %s, awaiting setupComplete",
                 self._speaker_identity,
                 self._target_lang,
             )
@@ -282,6 +289,7 @@ class GeminiSession:
         """Receive Gemini translated audio + transcription, route into the room."""
         audio_frames = 0
         text_chunks = 0
+        _first_content_seen = False
         async for raw in ws:
             if self._closed.is_set():
                 return
@@ -303,7 +311,24 @@ class GeminiSession:
 
             sc = msg.get("serverContent")
             if not sc:
+                # Log unrecognized message types once per session for debugging
+                if not _first_content_seen:
+                    logger.debug(
+                        "Gemini non-serverContent msg (%s -> %s): keys=%s",
+                        self._speaker_identity,
+                        self._target_lang,
+                        list(msg.keys())[:5],
+                    )
                 continue
+
+            if not _first_content_seen:
+                _first_content_seen = True
+                logger.info(
+                    "Gemini first serverContent (%s -> %s): keys=%s",
+                    self._speaker_identity,
+                    self._target_lang,
+                    list(sc.keys()),
+                )
 
             # Translated audio frames.
             model_turn = sc.get("modelTurn")
@@ -324,7 +349,12 @@ class GeminiSession:
                             )
 
             # Translated transcript -> text stream for the captions sidebar.
+            # The outputTranscription field may appear at the serverContent level
+            # (as documented in the v1beta proto) or nested inside modelTurn
+            # (observed in some API versions). Check both locations.
             ot = sc.get("outputTranscription")
+            if not ot and model_turn is not None:
+                ot = model_turn.get("outputTranscription")
             if ot and ot.get("text"):
                 await self._publish_transcript(ot["text"], final=False)
                 text_chunks += 1

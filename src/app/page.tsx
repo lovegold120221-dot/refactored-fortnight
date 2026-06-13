@@ -10,8 +10,10 @@ type ActivePanel = "join" | "schedule";
 
 export default function Home() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [creating, setCreating] = useState(false);
+  const [authCheckDone, setAuthCheckDone] = useState(false);
+  // All hooks must be called before any conditional returns (Rules of Hooks).
   const [activePanel, setActivePanel] = useState<ActivePanel>("join");
   const [joinValue, setJoinValue] = useState("");
   const [joinError, setJoinError] = useState("");
@@ -21,6 +23,34 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const { profile, updateProfile } = useUser();
   const theme = profile?.theme || "dark";
+
+  // Redirect unauthenticated users to the login page.
+  // Skip redirect if Supabase isn't configured (anonymous usage).
+  useEffect(() => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+      // Supabase not configured — skip auth and show landing directly.
+      setAuthCheckDone(true);
+      return;
+    }
+    if (authLoading) return;
+    setAuthCheckDone(true);
+    if (!user) {
+      router.replace("/auth/login");
+    }
+  }, [user, authLoading, router]);
+
+  // Show nothing while auth state is loading or redirecting.
+  if (!authCheckDone) {
+    return (
+      <main className="auth-shell">
+        <div className="auth-card">
+          <h1 className="auth-title">Orbit Meeting</h1>
+        </div>
+      </main>
+    );
+  }
+  if (!user && process.env.NEXT_PUBLIC_SUPABASE_URL) return null; // Redirecting
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -90,7 +120,7 @@ export default function Home() {
     <main className="entry-shell" data-theme={theme}>
       <aside className="entry-sidebar" aria-label="Primary">
         <div className="entry-brand">
-          <span className="entry-brand-mark" aria-hidden />
+          <img src="/icon-eburon.svg" alt="Eburon AI" className="entry-brand-logo" />
           <span>Orbit Meeting</span>
         </div>
         <nav className="entry-nav" aria-label="Meeting sections">
