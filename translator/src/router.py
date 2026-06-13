@@ -175,10 +175,12 @@ class TranslationRouter:
                     continue
 
                 # Determine a source name to help the frontend logic.
-                # If it's screen share audio, use "screen_share_audio", else "mic".
+                # Use publication source since RemoteAudioTrack has no .source.
+                participant = self._room.remote_participants.get(speaker_identity)
+                pub = participant.track_publications.get(track_sid) if participant else None
                 source_str = (
                     "screen_share_audio"
-                    if track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                    if pub is not None and pub.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
                     else "mic"
                 )
 
@@ -262,14 +264,16 @@ class TranslationRouter:
             for track_sid, track in tracks.items():
                 if not self._is_track_unmuted(p, track_sid):
                     continue
-                is_ss = track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                # Get source from the publication, not the track.
+                # RemoteAudioTrack doesn't have a .source attribute.
+                pub = p.track_publications.get(track_sid)
+                is_ss = (
+                    pub is not None
+                    and pub.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                )
                 if is_ss:
-                    # Screen share audio: always include. The content language
-                    # is independent of the sharer's declared lang attribute.
                     out.append((p.identity, track_sid, lang or "und", True))
                 elif lang and lang != NATIVE_LANG:
-                    # Mic audio: only include when the speaker has a declared
-                    # language that differs from the native sentinel.
                     out.append((p.identity, track_sid, lang, False))
         return out
 
