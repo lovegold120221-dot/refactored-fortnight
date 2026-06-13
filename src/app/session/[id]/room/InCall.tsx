@@ -1,4 +1,3 @@
-/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -36,8 +35,6 @@ export default function InCall({
   const remotes = useRemoteParticipants();
   const [lang, setLang] = useState(initialLang);
   const [translationEnabled, setTranslationEnabled] = useState(true);
-  const [muteOriginal, setMuteOriginal] = useState(false);
-  const [translateScreenShare, setTranslateScreenShare] = useState(true);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [headerCopied, setHeaderCopied] = useState(false);
@@ -53,7 +50,7 @@ export default function InCall({
           localParticipant.setCameraEnabled(true);
         }
       }
-    } catch (e) {}
+    } catch {}
   });
 
   const [reactions, setReactions] = useState<Map<string, { emoji: string; ts: number }>>(new Map());
@@ -76,7 +73,7 @@ export default function InCall({
           });
         }, 4000);
       }
-    } catch (e) {}
+    } catch {}
   });
 
   useDataChannel("breakout", (msg) => {
@@ -103,7 +100,7 @@ export default function InCall({
         alert("Breakout session ended. Returning to main room...");
         router.push(`/session/${payload.originalRoom}/room`);
       }
-    } catch (e) {
+    } catch {
       // Ignore non-JSON or unrelated messages
     }
   });
@@ -130,7 +127,7 @@ export default function InCall({
     return () => {
       room.off(RoomEvent.Connected, apply);
     };
-  }, [room, localParticipant, lang]);
+  }, [room, localParticipant, lang, handRaised]);
 
   useTranslationRouting(lang, translationEnabled, true, true);
 
@@ -160,12 +157,10 @@ export default function InCall({
   const screenShareTracks = useTracks([Track.Source.ScreenShare]);
   const hasScreenShare = screenShareTracks.length > 0;
 
-  const allParticipants = [localParticipant, ...humanRemotes];
 
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/session/${room.name}`
     : "";
-  const captionsOpen = activeSidebar === "captions";
 
   async function copyShareLink() {
     if (!shareUrl) return;
@@ -254,13 +249,8 @@ export default function InCall({
               myLang={lang}
               onLangChange={setLang}
               translationEnabled={translationEnabled}
-              muteOriginal={muteOriginal}
               onToggleTranslation={() => setTranslationEnabled((v) => !v)}
-              onToggleMuteOriginal={() => setMuteOriginal((v) => !v)}
-              captionsOpen={captionsOpen}
-              onToggleCaptions={() => toggleSidebar("captions")}
-              translateScreenShare={translateScreenShare}
-              onToggleTranslateScreenShare={() => setTranslateScreenShare((v) => !v)}
+              peerLangs={peerLangs}
             />
           )}
           {activeSidebar === "chat" && (

@@ -10,14 +10,12 @@ import { SUPPORTED_LANGUAGES } from "@/lib/languages";
 export default function TranslationPlayground({ voice }: { voice: string }) {
   const [sourceLang, setSourceLang] = useState("en");
   const [targetLang, setTargetLang] = useState("es");
-  const [playing, setPlaying] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [transcription, setTranscription] = useState<string | null>(null);
   const [translation, setTranslation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const originalAudioRef = useRef<HTMLAudioElement | null>(null);
-  const translatedAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const sourceName = SUPPORTED_LANGUAGES.find((l) => l.code === sourceLang)?.name ?? sourceLang;
   const targetName = SUPPORTED_LANGUAGES.find((l) => l.code === targetLang)?.name ?? targetLang;
@@ -123,6 +121,7 @@ export default function TranslationPlayground({ voice }: { voice: string }) {
           <label className="settings-label">Source</label>
           <select
             className="settings-select"
+            title="Source Language"
             value={sourceLang}
             onChange={(e) => { setSourceLang(e.target.value); setTranscription(null); setTranslation(null); }}
           >
@@ -136,6 +135,7 @@ export default function TranslationPlayground({ voice }: { voice: string }) {
           <label className="settings-label">Target</label>
           <select
             className="settings-select"
+            title="Target Language"
             value={targetLang}
             onChange={(e) => { setTargetLang(e.target.value); setTranscription(null); setTranslation(null); }}
           >

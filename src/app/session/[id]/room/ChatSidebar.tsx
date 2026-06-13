@@ -1,7 +1,9 @@
 /* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
-import { useChat } from "@livekit/components-react";
+import { useChat, useRoomContext } from "@livekit/components-react";
+import { supabase } from "@/lib/supabase";
+import { useUser } from "@/context/UserContext";
 import { useState, useRef, useEffect } from "react";
 
 export default function ChatSidebar({
@@ -12,6 +14,8 @@ export default function ChatSidebar({
   privateTo?: string;
 }) {
   const { send, chatMessages } = useChat();
+  const room = useRoomContext();
+  const { profile } = useUser();
   const [message, setMessage] = useState("");
   const bodyRef = useRef<HTMLDivElement | null>(null);
 
@@ -23,7 +27,20 @@ export default function ChatSidebar({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
-      send(message.trim());
+      const text = message.trim();
+      send(text);
+      
+      // Save to Supabase if it is a public chat
+      if (!privateTo && profile?.id) {
+        supabase.from("chat_messages").insert({
+          meeting_id: room.name,
+          user_id: profile.id,
+          message: text
+        }).then(({ error }) => {
+          if (error) console.error("Failed to save chat message to Supabase:", error);
+        });
+      }
+      
       setMessage("");
     }
   };

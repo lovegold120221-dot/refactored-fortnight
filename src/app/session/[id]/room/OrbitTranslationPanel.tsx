@@ -1,7 +1,9 @@
+/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
-import { useState } from "react";
-import { PICKER_LANGUAGES } from "@/lib/languages";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { PICKER_LANGUAGES, getLanguageByCode } from "@/lib/languages";
+import { useTextStream, useRemoteParticipants } from "@livekit/components-react";
 
 const VOICES = [
   { id: "male1", name: "Male 1" },
@@ -10,32 +12,95 @@ const VOICES = [
   { id: "female2", name: "Female 2" },
 ];
 
+const TRANSLATION_TOPIC = "lk.translation";
+
 export default function OrbitTranslationPanel({
   onClose,
   myLang,
   onLangChange,
   translationEnabled,
-  muteOriginal,
   onToggleTranslation,
-  onToggleMuteOriginal,
-  captionsOpen,
-  onToggleCaptions,
-  translateScreenShare,
-  onToggleTranslateScreenShare,
+  peerLangs,
 }: {
   onClose: () => void;
   myLang: string;
   onLangChange: (lang: string) => void;
   translationEnabled: boolean;
-  muteOriginal: boolean;
   onToggleTranslation: () => void;
-  onToggleMuteOriginal: () => void;
-  captionsOpen: boolean;
-  onToggleCaptions: () => void;
-  translateScreenShare: boolean;
-  onToggleTranslateScreenShare: () => void;
+  peerLangs: Map<string, string | undefined>;
 }) {
   const [voice, setVoice] = useState("male1");
+  const { textStreams } = useTextStream(TRANSLATION_TOPIC);
+  const remotes = useRemoteParticipants();
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+
+  const names = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of remotes) {
+      map.set(p.identity, p.name || p.identity);
+    }
+    return map;
+  }, [remotes]);
+
+  const entries = useMemo(() => {
+    const matching = textStreams
+      .filter((s) => s.streamInfo.attributes?.target_lang === myLang)
+      .sort((a, b) => a.streamInfo.timestamp - b.streamInfo.timestamp);
+
+    type Entry = {
+      key: string;
+      sourceIdentity: string;
+      text: string;
+      sourceLang: string | undefined;
+    };
+    const out: Entry[] = [];
+    const openIdxBySource = new Map<string, number>();
+
+    for (const s of matching) {
+      const source = s.streamInfo.attributes?.source_identity ?? s.participantInfo.identity;
+      const isFinal = s.streamInfo.attributes?.final === "true";
+      const text = s.text.trim();
+
+      if (isFinal) {
+        if (text) {
+          const idx = openIdxBySource.get(source);
+          if (idx !== undefined) {
+            out[idx].text = `${out[idx].text} ${text}`.trim();
+          } else {
+            out.push({
+              key: s.streamInfo.id,
+              sourceIdentity: source,
+              text,
+              sourceLang: peerLangs.get(source),
+            });
+          }
+        }
+        openIdxBySource.delete(source);
+        continue;
+      }
+
+      if (!text) continue;
+
+      const openIdx = openIdxBySource.get(source);
+      if (openIdx !== undefined) {
+        out[openIdx].text = `${out[openIdx].text} ${text}`.trim();
+      } else {
+        out.push({
+          key: s.streamInfo.id,
+          sourceIdentity: source,
+          text,
+          sourceLang: peerLangs.get(source),
+        });
+        openIdxBySource.set(source, out.length - 1);
+      }
+    }
+    return out;
+  }, [textStreams, myLang, peerLangs]);
+
+  useEffect(() => {
+    if (!bodyRef.current) return;
+    bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [entries]);
 
   return (
     <div className="sidebar-panel">
@@ -82,41 +147,28 @@ export default function OrbitTranslationPanel({
         </button>
       </div>
 
-      <div className="sidebar-body">
-        <div className="otp-transcript-area">
-          <div className="otp-transcript-box otp-transcript-source">
-            <span className="otp-transcript-label">Speaker</span>
-            <p className="otp-transcript-text">
-              Source transcription will appear here as people speak...
-            </p>
+      <div ref={bodyRef} className="sidebar-body">
+        {entries.length === 0 ? (
+          <div className="captions-empty">
+            No transcriptions yet. Translations will appear here as people speak...
           </div>
-          <div className="otp-transcript-box otp-transcript-target">
-            <span className="otp-transcript-label">
-              {PICKER_LANGUAGES.find((l) => l.code === myLang)?.name || myLang}
-            </span>
-            <p className="otp-transcript-text">
-              Translation will appear here...
-            </p>
-          </div>
-        </div>
-
-        <hr className="otp-divider" />
-
-        <div className="otp-section">
-          <h4 className="otp-label">Output</h4>
-          <label className="otp-checkbox-label">
-            <input type="checkbox" checked={captionsOpen} onChange={onToggleCaptions} />
-            <span>Show captions</span>
-          </label>
-          <label className="otp-checkbox-label">
-            <input type="checkbox" checked={muteOriginal} onChange={onToggleMuteOriginal} />
-            <span>Duck original audio {muteOriginal ? "15%" : "Off"}</span>
-          </label>
-          <label className="otp-checkbox-label">
-            <input type="checkbox" checked={translateScreenShare} onChange={onToggleTranslateScreenShare} />
-            <span>Translate shared screen audio</span>
-          </label>
-        </div>
+        ) : (
+          entries.map((entry) => (
+            <div className="captions-entry" key={entry.key}>
+              <div className="captions-speaker">
+                <span className="captions-speaker-name">
+                  {names.get(entry.sourceIdentity) ?? entry.sourceIdentity}
+                </span>
+                {entry.sourceLang && (
+                  <span className="captions-speaker-lang">
+                    {getLanguageByCode(entry.sourceLang)?.name || entry.sourceLang} → {getLanguageByCode(myLang)?.name || myLang}
+                  </span>
+                )}
+              </div>
+              <p className="captions-text">{entry.text}</p>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

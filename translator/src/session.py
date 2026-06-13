@@ -243,11 +243,12 @@ class GeminiSession:
                     ]
                 },
                 "outputAudioTranscription": {},
+                "inputAudioTranscription": {},
                 "generationConfig": {
                     "responseModalities": ["AUDIO"],
                     "translationConfig": {
                         "targetLanguageCode": self._target_lang,
-                        "echoTargetLanguage": False,
+                        "echoTargetLanguage": True,
                     },
                 },
                 "realtimeInputConfig": {
@@ -365,14 +366,18 @@ class GeminiSession:
                 ot = model_turn.get("outputTranscription")
             if ot and ot.get("text"):
                 await self._publish_transcript(ot["text"], final=False)
+
+            # Source transcription (what the speaker said in their language)
+            it = sc.get("inputTranscription")
+            if it and it.get("text"):
+                await self._publish_source_transcript(it["text"], final=False)
                 text_chunks += 1
                 if text_chunks in (1, 10) or text_chunks % 50 == 0:
                     logger.info(
-                        "eburon transcript chunk #%d for %s -> %s: %r",
+                        "eburon transcript chunk #%d for %s -> %s",
                         text_chunks,
                         self._speaker_identity,
                         self._target_lang,
-                        ot["text"][:60],
                     )
 
             if sc.get("turnComplete"):
@@ -398,3 +403,23 @@ class GeminiSession:
             await writer.aclose()
         except Exception as exc:
             logger.debug("text-stream publish failed: %s", exc)
+
+    async def _publish_source_transcript(self, text: str, *, final: bool) -> None:
+        """Publish source transcription (what the speaker said in their language)."""
+        if not text:
+            return
+        try:
+            writer = await self._room.local_participant.stream_text(
+                topic="lk.translation",
+                sender_identity=self._speaker_identity,
+                attributes={
+                    "target_lang": self._target_lang,
+                    "source_identity": self._speaker_identity,
+                    "kind": "source",
+                    "final": "true" if final else "false",
+                },
+            )
+            await writer.write(text)
+            await writer.aclose()
+        except Exception as exc:
+            logger.debug("source transcript publish failed: %s", exc)

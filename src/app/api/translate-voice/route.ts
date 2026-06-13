@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
           responseModalities: [Modality.AUDIO],
           translationConfig: {
             targetLanguageCode: targetLang,
-            echoTargetLanguage: false,
+            echoTargetLanguage: true,
           },
           inputAudioTranscription: {},
           outputAudioTranscription: {},
