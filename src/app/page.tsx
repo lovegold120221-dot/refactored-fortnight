@@ -24,6 +24,10 @@ export default function Home() {
   const { profile, updateProfile } = useUser();
   const theme = profile?.theme || "dark";
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
   // Redirect unauthenticated users to the login page.
   // Skip redirect if Supabase isn't configured (anonymous usage).
   useEffect(() => {
@@ -51,10 +55,6 @@ export default function Home() {
     );
   }
   if (!user && process.env.NEXT_PUBLIC_SUPABASE_URL) return null; // Redirecting
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
 
   function createSession() {
     setCreating(true);

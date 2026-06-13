@@ -94,6 +94,43 @@ export default function TranslationPlayground({ voice }: { voice: string }) {
     }
   }, []);
 
+  // ── Send to Gemini Live proxy ──────────────────────────────────
+
+  const sendForTranslation = useCallback(
+    async (pcmBase64: string) => {
+      setProcessing(true);
+      setError(null);
+
+      try {
+        const res = await fetch("/api/translate-voice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            audio: pcmBase64,
+            sourceLang,
+            targetLang,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Request failed (${res.status})`);
+        }
+
+        const data = await res.json();
+        setTranscription(data.transcription || null);
+        setTranslation(data.translation || null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Translation request failed",
+        );
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [sourceLang, targetLang],
+  );
+
   const stopRecording = useCallback(() => {
     recordingRef.current = false;
     setRecording(false);
@@ -146,44 +183,11 @@ export default function TranslationPlayground({ voice }: { voice: string }) {
         : int16ToBase64(combined);
 
     sendForTranslation(pcmBase64);
-  }, []);
+  }, [sendForTranslation]);
 
   // ── Send to Gemini Live proxy ──────────────────────────────────
 
-  const sendForTranslation = useCallback(
-    async (pcmBase64: string) => {
-      setProcessing(true);
-      setError(null);
 
-      try {
-        const res = await fetch("/api/translate-voice", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            audio: pcmBase64,
-            sourceLang,
-            targetLang,
-          }),
-        });
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || `Request failed (${res.status})`);
-        }
-
-        const data = await res.json();
-        setTranscription(data.transcription || null);
-        setTranslation(data.translation || null);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Translation request failed",
-        );
-      } finally {
-        setProcessing(false);
-      }
-    },
-    [sourceLang, targetLang],
-  );
 
   // ── Play translation aloud ─────────────────────────────────────
 

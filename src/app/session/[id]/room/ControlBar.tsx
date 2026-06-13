@@ -15,15 +15,12 @@ import {
   CaptionsIcon,
   MicOffIcon,
   MicOnIcon,
-  SecurityIcon,
   ParticipantsIcon,
   ChatIcon,
   ShareScreenIcon,
   TranslateIcon,
   RecordIcon,
-  ReactionsIcon,
   MoreIcon,
-  PollIcon,
   BreakoutRoomsIcon,
   SettingsIcon,
   LinkIcon,
@@ -140,15 +137,15 @@ export default function ControlBar({
             types: [{ description: 'WebM Video', accept: { 'video/webm': ['.webm'] } }],
           });
           if (fileHandle) {
-            const writable = await (fileHandle as any).createWritable();
+            const writable = await (fileHandle as unknown as { createWritable: () => Promise<FileSystemWritableFileStream> }).createWritable();
             await writable.write(recordedBlob);
             await writable.close();
             stream.getTracks().forEach((t) => t.stop());
             setIsLocalRecording(false);
             return;
           }
-        } catch (_saveErr: any) {
-          if (_saveErr.name !== 'AbortError') {
+        } catch (_saveErr: unknown) {
+          if ((_saveErr as Error)?.name !== 'AbortError') {
             console.warn("showSaveFilePicker failed, falling back to download:", _saveErr);
           }
         }
@@ -441,7 +438,6 @@ function CtrlButton({
   dataMobile,
   hasCaret,
   muted,
-  style,
   className = "",
 }: {
   active: boolean;
@@ -452,17 +448,14 @@ function CtrlButton({
   hasCaret?: boolean;
   muted?: boolean;
   className?: string;
-  style?: React.CSSProperties;
 }) {
   return (
-    // eslint-disable-next-line
     <button
       className={`ctrl${active ? " ctrl--active" : ""}${muted ? " ctrl--muted" : ""} ${className}`.trim()}
       onClick={onClick}
       title={label}
       aria-label={label}
       data-mobile={dataMobile}
-      style={style}
     >
       <span className="ctrl-icon-row">
         <span className="ctrl-icon">{icon}</span>
