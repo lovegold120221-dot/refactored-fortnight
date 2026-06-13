@@ -49,6 +49,7 @@ export default function ControlBar({
   const [isLocalRecording, setIsLocalRecording] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareWithAudio, setShareWithAudio] = useState(true);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -75,6 +76,16 @@ export default function ControlBar({
     if (screenShareOn) {
       // Stop sharing immediately
       await localParticipant.setScreenShareEnabled(false);
+      return;
+    }
+    const isMobile = window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      try {
+        await localParticipant.setScreenShareEnabled(true, { audio: false });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        alert("Failed to start screen share: " + msg);
+      }
       return;
     }
     // Show dialog to choose options
@@ -271,13 +282,53 @@ export default function ControlBar({
         </button>
         {/* Mobile only */}
         <CtrlButton
-          active={false}
-          onClick={() => {}}
+          active={showMoreMenu}
+          onClick={() => setShowMoreMenu(true)}
           label="More"
           icon={<MoreIcon />}
           dataMobile="more"
         />
       </div>
+
+      {/* ——— Mobile "More" Menu ——— */}
+      {showMoreMenu && (
+        <div className="mobile-more-overlay" onClick={() => setShowMoreMenu(false)}>
+          <div className="mobile-more-menu" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-more-header">
+              <h3>More Options</h3>
+              <button className="mobile-more-close" onClick={() => setShowMoreMenu(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <div className="mobile-more-content">
+              <button className="mobile-more-item" onClick={() => { onToggleSidebar("chat"); setShowMoreMenu(false); }}>
+                <ChatIcon /> <span>Chat</span>
+              </button>
+              <button className="mobile-more-item" onClick={() => { onToggleSidebar("translation"); setShowMoreMenu(false); }}>
+                <TranslateIcon /> <span>Translate</span>
+              </button>
+              <button className="mobile-more-item" onClick={() => { onToggleSidebar("captions"); setShowMoreMenu(false); }}>
+                <CaptionsIcon /> <span>Captions</span>
+              </button>
+              <button className="mobile-more-item" onClick={() => { toggleRecording(); setShowMoreMenu(false); }}>
+                <RecordIcon /> <span>{isLocalRecording ? "Stop Recording" : "Record"}</span>
+              </button>
+              <button className="mobile-more-item" onClick={() => { toggleBreakout(); setShowMoreMenu(false); }}>
+                <BreakoutRoomsIcon /> <span>Breakout</span>
+              </button>
+              <button className="mobile-more-item" onClick={() => { onToggleSpeaker(); setShowMoreMenu(false); }}>
+                {speakerMuted ? <SpeakerOffIcon /> : <SpeakerIcon />} <span>Speaker</span>
+              </button>
+              <button className="mobile-more-item" onClick={() => { handleCopyLink(); setShowMoreMenu(false); }}>
+                <LinkIcon /> <span>{copied ? "Copied" : "Link"}</span>
+              </button>
+              <button className="mobile-more-item" onClick={() => { router.push("/settings"); setShowMoreMenu(false); }}>
+                <SettingsIcon /> <span>Settings</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ——— Share Screen Dialog ——— */}
       {showShareDialog && (
