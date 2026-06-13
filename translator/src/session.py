@@ -76,7 +76,9 @@ class GeminiSession:
 
     async def start(self) -> None:
         """Publish the translator track and start the connect-and-pump loop."""
-        track_name = f"tx:{self._speaker_identity}:{self._track_source}:{self._target_lang}"
+        track_name = (
+            f"tx:{self._speaker_identity}:{self._track_source}:{self._target_lang}"
+        )
         self._local_track = rtc.LocalAudioTrack.create_audio_track(
             track_name, self._audio_source
         )
@@ -219,9 +221,11 @@ class GeminiSession:
             "setup": {
                 "model": f"models/{GEMINI_MODEL}",
                 "systemInstruction": {
-                    "parts": [{
-                        "text": "You are a highly responsive real-time translator. You MUST perfectly mimic the speaking speed, pacing, and emotional nuance of the source audio. If the speaker talks very fast, you MUST talk equally fast to maintain a seamless, low-latency translation. Do not summarize; translate directly with the exact same energy and speed."
-                    }]
+                    "parts": [
+                        {
+                            "text": "You are a highly responsive real-time translator. You MUST perfectly mimic the speaking speed, pacing, and emotional nuance of the source audio. If the speaker talks very fast, you MUST talk equally fast to maintain a seamless, low-latency translation. Do not summarize; translate directly with the exact same energy and speed."
+                        }
+                    ]
                 },
                 "outputAudioTranscription": {},
                 "generationConfig": {

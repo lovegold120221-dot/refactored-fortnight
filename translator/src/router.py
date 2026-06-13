@@ -173,10 +173,14 @@ class TranslationRouter:
                 track = tracks.get(track_sid)
                 if track is None:
                     continue
-                
+
                 # Determine a source name to help the frontend logic.
                 # If it's screen share audio, use "screen_share_audio", else "mic".
-                source_str = "screen_share_audio" if track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO else "mic"
+                source_str = (
+                    "screen_share_audio"
+                    if track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                    else "mic"
+                )
 
                 session = GeminiSession(
                     room=self._room,
@@ -243,9 +247,7 @@ class TranslationRouter:
 
     def _is_track_unmuted(self, p: rtc.RemoteParticipant, track_sid: str) -> bool:
         pub = p.track_publications.get(track_sid)
-        if pub and pub.kind == rtc.TrackKind.KIND_AUDIO and not pub.muted:
-            return True
-        return False
+        return bool(pub and pub.kind == rtc.TrackKind.KIND_AUDIO and not pub.muted)
 
     # --- Teardown ----------------------------------------------------------
 
