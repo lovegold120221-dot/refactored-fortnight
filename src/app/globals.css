@@ -1081,6 +1081,19 @@ body {
   font-size: 14px;
   line-height: 1.55;
   color: var(--fg-secondary);
+  margin: 0;
+}
+
+.captions-text strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.captions-text--translated {
+  color: var(--accent);
+  margin-top: 4px;
+  padding-left: 8px;
+  border-left: 2px solid var(--accent);
 }
 
 .captions-empty {
