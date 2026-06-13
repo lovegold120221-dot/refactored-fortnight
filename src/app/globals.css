@@ -1340,56 +1340,100 @@ body {
   gap: 6px;
 }
 
-.otp-status {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 4px;
-  line-height: 1.4;
+/* ── Translation Panel header ── */
+
+.otp-header-row {
+  gap: 6px;
 }
 
-.otp-status-on {
-  background: var(--success-soft);
-  color: var(--success);
-}
-
-.otp-status-off {
-  background: var(--error-soft);
-  color: var(--error);
-}
-
-.otp-start-btn {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--fg-secondary);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  line-height: 1.4;
-}
-
-.otp-start-btn:hover {
+.otp-header-select {
+  flex: 1;
+  min-width: 0;
   background: var(--surface-strong);
+  border: 1px solid var(--border);
   color: var(--fg);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.otp-header-select option {
+  background: var(--bg-elevated);
+  color: var(--fg);
+}
+
+.otp-radio-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.otp-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--fg-ghost);
+  transition: all 0.2s;
+}
+
+.otp-radio-toggle--on {
+  border-color: var(--success);
+}
+
+.otp-radio-toggle--on .otp-radio-dot {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(67, 211, 158, 0.5);
+}
+
+.otp-radio-toggle:hover {
   border-color: var(--fg-tertiary);
 }
 
-.otp-start-btn-on {
-  background: var(--success-soft);
-  color: var(--success);
-  border-color: transparent;
+/* ── Translation transcript area ── */
+
+.otp-transcript-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 160px;
 }
 
-.otp-start-btn-on:hover {
-  background: var(--error-soft);
-  color: var(--error);
-  border-color: transparent;
+.otp-transcript-box {
+  flex: 1;
+  background: var(--bg-inset);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-height: 70px;
+}
+
+.otp-transcript-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-ghost);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.otp-transcript-text {
+  font-size: 13px;
+  color: var(--fg-secondary);
+  line-height: 1.5;
+  margin: 0;
+  word-break: break-word;
 }
 
 .sidebar-body {
