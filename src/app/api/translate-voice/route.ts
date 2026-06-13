@@ -25,6 +25,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 interface TranslateVoiceBody {
   audio?: string;
+  mimeType?: string;
   sourceLang?: string;
   targetLang?: string;
 }
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { audio, sourceLang, targetLang } = body;
+  const { audio, mimeType, sourceLang, targetLang } = body;
   if (!audio || !sourceLang || !targetLang) {
     return NextResponse.json(
       {
@@ -146,11 +147,11 @@ export async function POST(req: NextRequest) {
       .then((s) => {
         session = s;
 
-        // Send PCM audio as realtime input
+        // Send audio as realtime input
         session.sendRealtimeInput({
           audio: {
             data: audio,
-            mimeType: "audio/pcm;rate=16000",
+            mimeType: mimeType || "audio/pcm;rate=16000",
           },
         });
 
