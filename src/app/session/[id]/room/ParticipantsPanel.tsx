@@ -16,9 +16,6 @@ import {
   HandRaiseIcon,
   PinIcon,
   SearchIcon,
-  LockIcon,
-  UnlockIcon,
-  InviteIcon,
   MoreVerticalIcon,
   ScreenShareOnIcon,
 } from "./icons";
@@ -54,7 +51,6 @@ export default function ParticipantsPanel({
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [roomLocked, setRoomLocked] = useState(false);
 
   const micOn = !!microphoneTrack && !microphoneTrack.isMuted;
   const camOn = !!cameraTrack && cameraTrack.source === Track.Source.Camera && !cameraTrack.isMuted;
@@ -120,6 +116,14 @@ export default function ParticipantsPanel({
     <div className="sidebar-panel">
       <div className="sidebar-header">
         <span>Participants ({totalCount})</span>
+        {isHost && (
+          <button className="pp-mute-all-btn" onClick={async () => {
+            try { await fetch("/api/moderate", { method: "POST", body: JSON.stringify({ action: "muteAll", roomName }) }); }
+            catch { alert("Failed to mute all"); }
+          }} title="Mute all participants">
+            <MicOffIcon />
+          </button>
+        )}
         <button className="sidebar-close" onClick={onClose} aria-label="Close">
           <CloseIcon />
         </button>
@@ -139,14 +143,6 @@ export default function ParticipantsPanel({
       </div>
 
       <div className="sidebar-body">
-        {isHost && (
-          <HostControls
-            roomLocked={roomLocked}
-            onToggleLock={() => setRoomLocked((v) => !v)}
-            roomName={roomName}
-          />
-        )}
-
         <SelfRow
           name={localParticipant?.name || localParticipant?.identity || "You"}
           initial={(localParticipant?.name || localParticipant?.identity || "Y").slice(0, 1).toUpperCase()}
@@ -188,39 +184,6 @@ export default function ParticipantsPanel({
           />
         ))}
       </div>
-    </div>
-  );
-}
-
-// ── Host Controls ─────────────────────────────────────────────────────
-
-function HostControls({
-  roomLocked,
-  onToggleLock,
-  roomName,
-}: {
-  roomLocked: boolean;
-  onToggleLock: () => void;
-  roomName: string;
-}) {
-  return (
-    <div className="pp-host-controls">
-      <button className="pp-host-btn" onClick={async () => {
-        try { await fetch("/api/moderate", { method: "POST", body: JSON.stringify({ action: "muteAll", roomName }) }); }
-        catch { alert("Failed to mute all"); }
-      }}>
-        <MicOffIcon /> <span>Mute All</span>
-      </button>
-      <button className={`pp-host-btn ${roomLocked ? "pp-host-btn--active" : ""}`} onClick={onToggleLock}>
-        {roomLocked ? <LockIcon /> : <UnlockIcon />}
-        <span>{roomLocked ? "Locked" : "Lock"}</span>
-      </button>
-      <button className="pp-host-btn" onClick={async () => {
-        await navigator.clipboard.writeText(`${window.location.origin}/session/${roomName}`);
-        alert("Meeting link copied!");
-      }}>
-        <InviteIcon /> <span>Invite</span>
-      </button>
     </div>
   );
 }

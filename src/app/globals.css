@@ -1301,6 +1301,31 @@ body {
   color: #fff;
 }
 
+.pp-mute-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-ghost);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+
+.pp-mute-all-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pp-mute-all-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* Header left/right groups for status + action buttons */
 .sidebar-header-left {
   display: flex;
@@ -1489,41 +1514,6 @@ body {
 
 .pp-tab:hover {
   color: var(--fg);
-}
-
-/* Host controls */
-.pp-host-controls {
-  display: flex;
-  gap: 6px;
-  padding: 10px 16px;
-  flex-wrap: wrap;
-}
-
-.pp-host-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface-strong);
-  color: var(--fg-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-  font-family: inherit;
-}
-
-.pp-host-btn:hover {
-  background: var(--accent-soft);
-  color: var(--fg);
-}
-
-.pp-host-btn--active {
-  background: var(--warning-soft);
-  border-color: var(--warning);
-  color: var(--warning);
 }
 
 /* Self row */
@@ -1782,7 +1772,6 @@ body {
   height: 14px;
 }
 
-.pp-host-btn svg,
 .pp-more-item svg {
   width: 14px;
   height: 14px;
