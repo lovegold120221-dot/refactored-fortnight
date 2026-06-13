@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 // Override with CAP_SERVER_URL=http://localhost:3000 for local dev
-const PROD_URL = "https://legendary-ten.vercel.app";
+const PROD_URL = "https://orbit.eburon.ai";
 const serverUrl = process.env.CAP_SERVER_URL || PROD_URL;
 const isLocal = serverUrl.includes("localhost") || serverUrl.includes("127.0.0.1");
 
