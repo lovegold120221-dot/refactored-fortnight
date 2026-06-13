@@ -122,21 +122,47 @@ export default function ControlBar({
 
       const mediaRecorder = new MediaRecorder(stream);
       const chunks: Blob[] = [];
+      let recordedBlob: Blob | null = null;
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
+      mediaRecorder.onstop = async () => {
+        recordedBlob = new Blob(chunks, { type: "video/webm" });
+        const filename = `orbit-recording-${room.name}-${Date.now()}.webm`;
+
+        // Try File System Access API: showSaveFilePicker lets user pick save location
+        try {
+          // @ts-expect-error - File System Access API types from WICG spec
+          const fileHandle = await window.showSaveFilePicker?.({
+            suggestedName: filename,
+            types: [{ description: 'WebM Video', accept: { 'video/webm': ['.webm'] } }],
+          });
+          if (fileHandle) {
+            const writable = await (fileHandle as any).createWritable();
+            await writable.write(recordedBlob);
+            await writable.close();
+            stream.getTracks().forEach((t) => t.stop());
+            setIsLocalRecording(false);
+            return;
+          }
+        } catch (_saveErr: any) {
+          if (_saveErr.name !== 'AbortError') {
+            console.warn("showSaveFilePicker failed, falling back to download:", _saveErr);
+          }
+        }
+
+        // Fallback: download via <a> tag
+        const url = URL.createObjectURL(recordedBlob);
         const a = document.createElement("a");
         document.body.appendChild(a);
         a.style.display = "none";
         a.href = url;
-        a.download = `recording-${room.name}-${Date.now()}.webm`;
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
+        document.body.removeChild(a);
         stream.getTracks().forEach((t) => t.stop());
         setIsLocalRecording(false);
       };

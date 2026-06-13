@@ -8,7 +8,7 @@ import { SettingsIcon } from "@/app/session/[id]/room/icons";
 import CameraPreview from "./CameraPreview";
 import TranslationPlayground from "./TranslationPlayground";
 
-type SettingsTab = "general" | "audio" | "video" | "translation";
+type SettingsTab = "general" | "audio" | "video" | "translation" | "recording";
 
 const VOICES = [
   { id: "Orus", label: "Orus · Formal" },
@@ -25,6 +25,7 @@ const TABS: { id: SettingsTab; label: string }[] = [
   { id: "audio", label: "Audio" },
   { id: "video", label: "Video" },
   { id: "translation", label: "Translation" },
+  { id: "recording", label: "Recording" },
 ];
 
 export default function SettingsPage() {
@@ -47,6 +48,8 @@ export default function SettingsPage() {
   const [showCaptions, setShowCaptions] = useState(true);
   const [muteOriginalAudio, setMuteOriginalAudio] = useState(true);
   const [translateAudioPlayback, setTranslateAudioPlayback] = useState(true);
+  const [recordingSavePath, setRecordingSavePath] = useState("");
+  const [recordingAutoStart, setRecordingAutoStart] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -63,6 +66,8 @@ export default function SettingsPage() {
         setShowCaptions(profile.show_captions ?? true);
         setMuteOriginalAudio(profile.mute_original_audio ?? true);
         setTranslateAudioPlayback(profile.translate_audio_playback ?? true);
+        setRecordingSavePath(profile.recording_save_path ?? "");
+        setRecordingAutoStart(profile.recording_auto_start ?? false);
       }, 0);
       return () => clearTimeout(t);
     }
@@ -88,6 +93,8 @@ export default function SettingsPage() {
       show_captions: showCaptions,
       mute_original_audio: muteOriginalAudio,
       translate_audio_playback: translateAudioPlayback,
+      recording_save_path: recordingSavePath,
+      recording_auto_start: recordingAutoStart,
     });
     setSaving(false);
     setDirty(false);
@@ -350,6 +357,73 @@ export default function SettingsPage() {
                 {/* ——— Translation Test Playground ——— */}
                 <div className="settings-divider" />
                 <TranslationPlayground voice={voice} />
+              </div>
+            )}
+
+            {activeTab === "recording" && (
+              <div className="settings-tab">
+                <h2 className="settings-tab-title">Recording</h2>
+                <p className="settings-tab-desc">Configure local meeting recording settings.</p>
+
+                <div className="settings-field">
+                  <label className="settings-label">Default save location</label>
+                  <div className="settings-recording-path-row">
+                    <input
+                      className="settings-input settings-input-flex"
+                      value={recordingSavePath}
+                      onChange={(e) => { setRecordingSavePath(e.target.value); markDirty(); }}
+                      placeholder="e.g. ~/Recordings or C:\Users\You\Videos"
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      onClick={async () => {
+                        try {
+                          // @ts-expect-error - File System Access API
+                          const dir = await window.showDirectoryPicker?.();
+                          if (dir) {
+                            setRecordingSavePath(dir.name);
+                            markDirty();
+                            const permissionState = await dir.requestPermission?.({ mode: 'readwrite' });
+                            if (permissionState === 'granted') {
+                              window.localStorage.setItem('orbit.recording-dir-handle', JSON.stringify({ name: dir.name }));
+                            }
+                          }
+                        } catch (e: any) {
+                          if (e.name !== 'AbortError' && e.name !== 'SecurityError') {
+                            console.warn("Directory picker failed:", e);
+                          }
+                        }
+                      }}
+                      aria-label="Browse for save folder"
+                    >
+                      Browse
+                    </button>
+                  </div>
+                  <p className="settings-hint">
+                    Choose where recordings are saved. Uses your browser&apos;s File System Access API on supported browsers; falls back to download otherwise.
+                  </p>
+                </div>
+
+                <div className="settings-toggle-row">
+                  <div>
+                    <span className="settings-label">Auto-start recording on join</span>
+                    <p className="settings-hint">Automatically begin recording when you enter a meeting</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={recordingAutoStart}
+                      onChange={(e) => { setRecordingAutoStart(e.target.checked); markDirty(); }}
+                      aria-label="Auto-start recording"
+                    />
+                    <span className="slider" />
+                  </label>
+                </div>
+
+                <div className="settings-info-box">
+                  <p><strong>How recording works:</strong> Local recording uses the MediaRecorder API to capture your screen and meeting audio. When you stop recording, the file is saved to your chosen folder (File System Access API) or downloaded via your browser. No server-side storage is used.</p>
+                </div>
               </div>
             )}
 

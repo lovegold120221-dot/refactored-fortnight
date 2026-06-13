@@ -14,17 +14,16 @@ import { useRouter } from "next/navigation";
 import { PARTICIPANT_LANG_ATTR } from "@/lib/config";
 import { getLanguageByCode } from "@/lib/languages";
 import { useTranslationRouting } from "./useTranslationRouting";
-import SelfView from "./SelfView";
+
 import ControlBar from "./ControlBar";
 import CaptionsSidebar from "./CaptionsSidebar";
 import ParticipantsPanel from "./ParticipantsPanel";
 import ChatSidebar from "./ChatSidebar";
 import BreakoutSidebar from "./BreakoutSidebar";
-import ActiveSpeaker from "./ActiveSpeaker";
-import Filmstrip from "./Filmstrip";
 import ScreenShareView from "./ScreenShareView";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
-import { SpeakerIcon, ChevronDownIcon, GridViewIcon } from "./icons";
+import GalleryView from "./GalleryView";
+import { SpeakerIcon, ChevronDownIcon } from "./icons";
 
 export default function InCall({
   initialLang,
@@ -59,9 +58,23 @@ export default function InCall({
     try {
       const payload = JSON.parse(new TextDecoder().decode(msg.payload));
       if (payload.type === "BREAKOUT_JOIN" && payload.newRoom) {
+        // Preserve identity for the new room
+        const name = sessionStorage.getItem("lt.displayName") || localParticipant.name || "participant";
+        const lang = sessionStorage.getItem("lt.lang") || initialLang;
+        sessionStorage.setItem("lt.displayName", name);
+        sessionStorage.setItem("lt.lang", lang);
+        if (payload.token) {
+          // Store pre-generated token for the breakout room
+          sessionStorage.setItem("orbit.breakout-token", payload.token);
+          sessionStorage.setItem("orbit.breakout-server-url", payload.serverUrl || "");
+        }
         alert("You have been assigned to a breakout room. Moving now...");
         router.push(`/session/${payload.newRoom}/room?returnTo=${payload.originalRoom}`);
       } else if (payload.type === "BREAKOUT_END" && payload.originalRoom) {
+        const name = sessionStorage.getItem("lt.displayName") || localParticipant.name || "participant";
+        const lang = sessionStorage.getItem("lt.lang") || initialLang;
+        sessionStorage.setItem("lt.displayName", name);
+        sessionStorage.setItem("lt.lang", lang);
         alert("Breakout session ended. Returning to main room...");
         router.push(`/session/${payload.originalRoom}/room`);
       }
@@ -119,7 +132,7 @@ export default function InCall({
   const screenShareTracks = useTracks([Track.Source.ScreenShare]);
   const hasScreenShare = screenShareTracks.length > 0;
 
-  const activeSpeaker = humanRemotes.find(p => p.isSpeaking) || humanRemotes[0] || localParticipant;
+  const allParticipants = [localParticipant, ...humanRemotes];
 
   return (
     <div className="room-shell">
@@ -142,10 +155,7 @@ export default function InCall({
             </div>
             
             <div className="orbit-topbar-right">
-              <button className="orbit-view-btn">
-                <GridViewIcon />
-                <span>View</span>
-              </button>
+              {/* No view modes allowed */}
             </div>
           </div>
 
@@ -167,16 +177,12 @@ export default function InCall({
 
         {/* Stage */}
         <main className="room-stage orbit-stage">
-          {/* Participant filmstrip across the top */}
-          <Filmstrip participants={humanRemotes} myLang={lang} />
           <div className="orbit-stage-center">
             {hasScreenShare ? (
               <ScreenShareView myLang={lang} />
             ) : (
-              <ActiveSpeaker participant={activeSpeaker} myLang={lang} />
+              <GalleryView remotes={humanRemotes} myLang={lang} isHost={isHost} roomName={room.name} />
             )}
-            {/* We hide the self view if we are the only one, since we're the active speaker */}
-            {humanRemotes.length > 0 && <SelfView />}
           </div>
           {/* Right Sidebar Panel */}
           {activeSidebar === "participants" && (

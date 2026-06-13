@@ -578,6 +578,60 @@ body {
   display: block;
 }
 
+.tile-mod-btns {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.tile:hover .tile-mod-btns,
+.tile-mod-btns:focus-within {
+  opacity: 1;
+}
+
+.tile-mod-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.65);
+  color: rgba(255, 255, 255, 0.85);
+  transition: background 0.12s ease, color 0.12s ease;
+  white-space: nowrap;
+}
+
+.tile-mod-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+}
+
+.tile-mod-btn-warning {
+  color: #fbbf24;
+}
+
+.tile-mod-btn-warning:hover {
+  background: rgba(251, 191, 36, 0.25);
+  color: #fcd34d;
+}
+
+.tile-mod-btn-error {
+  color: #f87171;
+}
+
+.tile-mod-btn-error:hover {
+  background: rgba(248, 113, 113, 0.25);
+  color: #fca5a5;
+}
+
 .tile-placeholder {
   position: absolute;
   inset: 0;
@@ -1479,6 +1533,84 @@ body {
   min-height: 0;
 }
 
+/* ——————————————————————————————————————
+   Orbit Meeting — Gallery View
+   —————————————————————————————————————— */
+
+.gallery-view {
+  flex: 1;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.gallery-view-item {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--surface);
+  /* The children (LocalTile/ParticipantTile) expect to fill their container */
+}
+
+/* Ensure tiles inside gallery fill properly */
+.gallery-view-item .tile {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  border: none;
+}
+
+/* 1 Participant */
+.gallery-grid-1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+/* 2 Participants */
+.gallery-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr;
+}
+
+/* 3-4 Participants */
+.gallery-grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+
+/* 5-6 Participants */
+.gallery-grid-6 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+
+/* 7-9 Participants */
+.gallery-grid-9 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+}
+
+/* 10+ Participants */
+.gallery-grid-n {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-auto-rows: 1fr;
+}
+
+@media (max-width: 768px) {
+  .gallery-grid-2 {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+  .gallery-grid-4, .gallery-grid-6 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(auto-fit, minmax(0, 1fr));
+  }
+}
 /* ——————————————————————————————————————
    Orbit Meeting — Active Speaker
    —————————————————————————————————————— */
@@ -2566,6 +2698,176 @@ body {
 }
 
 /* ——————————————————————————————————————
+   Auth Pages (login / signup / reset)
+   —————————————————————————————————————— */
+
+.auth-shell {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin-bottom: 16px;
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin: 0;
+}
+
+.auth-desc {
+  font-size: 14px;
+  color: var(--fg-secondary);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-secondary);
+}
+
+.auth-field input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-inset);
+  color: var(--fg);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.auth-field input:focus {
+  border-color: var(--accent);
+}
+
+.auth-field input::placeholder {
+  color: var(--fg-ghost);
+}
+
+.auth-error {
+  font-size: 13px;
+  color: #f87171;
+  line-height: 1.4;
+  margin: 0;
+  padding: 8px 12px;
+  background: rgba(248, 113, 113, 0.08);
+  border-radius: 6px;
+}
+
+.auth-submit {
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg-tertiary);
+  margin-top: 12px;
+}
+
+.auth-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-sep {
+  color: var(--border);
+}
+
+.auth-text {
+  color: var(--fg-tertiary);
+}
+
+/* ——— User menu in the sidebar ——— */
+
+.entry-auth-section {
+  margin-top: auto;
+  padding: 16px 12px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entry-auth-email {
+  font-size: 12px;
+  color: var(--fg-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-auth-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--fg-tertiary);
+  text-align: left;
+  transition: color 0.12s ease, background 0.12s ease;
+}
+
+.entry-auth-btn:hover {
+  color: var(--fg);
+  background: var(--bg-inset);
+}
+
+/* ——————————————————————————————————————
    Mobile Meeting UI — Native App Feel
    —————————————————————————————————————— */
 
@@ -3515,6 +3817,35 @@ html[data-theme="light"] .tile-name {
   line-height: 1.4;
 }
 
+.settings-recording-path-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.settings-recording-path-row .settings-input-flex {
+  flex: 1;
+}
+
+.settings-recording-path-row .btn-outline {
+  flex-shrink: 0;
+}
+
+.settings-info-box {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-secondary);
+}
+
+.settings-info-box strong {
+  color: var(--fg);
+}
+
 /* ——————————————————————————————————————
    Setting-row layout (matching reference)
    —————————————————————————————————————— */
@@ -4273,6 +4604,58 @@ html[data-theme="light"] .tile-name {
 
 .breakout-btn[data-disabled="true"] {
   opacity: 0.5;
+}
+
+.breakout-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.breakout-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--fg-secondary);
+}
+
+.breakout-label .settings-select {
+  width: auto;
+  min-width: 120px;
+  margin-left: 12px;
+}
+
+.breakout-status {
+  font-size: 12px;
+  color: var(--accent);
+  line-height: 1.4;
+  padding: 8px 0;
+}
+
+.breakout-room-list {
+  margin-top: 8px;
+}
+
+.breakout-room-list-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.breakout-room-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg-secondary);
+  margin-bottom: 4px;
+  word-break: break-all;
 }
 
 .chat-sidebar-body {

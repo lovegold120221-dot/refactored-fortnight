@@ -8,20 +8,29 @@ export default function BreakoutSidebar({ onClose }: { onClose: () => void }) {
   const room = useRoomContext();
   const participants = useParticipants();
   const [loading, setLoading] = useState(false);
+  const [activeBreakoutRooms, setActiveBreakoutRooms] = useState<string[]>([]);
+  const [numRooms, setNumRooms] = useState(2);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const handleStartBreakout = async () => {
     setLoading(true);
+    setStatusMsg(null);
     try {
-      // Simple auto-assign: divide into 2 rooms
-      const assignments: { identity: string; newRoom: string }[] = [];
+      // Exclude local participant (host stays in main room)
+      const remoteParticipants = participants.filter(p => !p.isLocal);
+      if (remoteParticipants.length === 0) {
+        setStatusMsg("No other participants to assign to breakout rooms.");
+        setLoading(false);
+        return;
+      }
+
+      const assignments: { identity: string; newRoom: string; displayName: string }[] = [];
       
-      // Exclude local participant (host) if you want them to stay in main room,
-      // but for testing, let's just assign everyone except maybe the host?
-      // We'll just assign everyone.
-      participants.forEach((p, index) => {
-        const roomSuffix = (index % 2) + 1; // 1 or 2
+      remoteParticipants.forEach((p, index) => {
+        const roomSuffix = (index % numRooms) + 1;
         assignments.push({
           identity: p.identity,
+          displayName: p.name || p.identity,
           newRoom: `${room.name}-breakout-${roomSuffix}`,
         });
       });
@@ -37,16 +46,26 @@ export default function BreakoutSidebar({ onClose }: { onClose: () => void }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert("Breakout rooms started! Participants are being moved.");
+
+      // Track which breakout rooms are active
+      const rooms = [...new Set(assignments.map(a => a.newRoom))];
+      setActiveBreakoutRooms(rooms);
+      setStatusMsg(`Breakout rooms started! ${assignments.length} participants assigned to ${rooms.length} rooms.`);
     } catch (e: any) {
-      alert("Failed to start breakouts: " + e.message);
+      setStatusMsg("Failed to start breakouts: " + e.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleEndBreakout = async () => {
+    if (activeBreakoutRooms.length === 0) {
+      // Default names if we lost state
+      const defaultRooms = Array.from({ length: numRooms }, (_, i) => `${room.name}-breakout-${i + 1}`);
+      setActiveBreakoutRooms(defaultRooms);
+    }
     setLoading(true);
+    setStatusMsg(null);
     try {
       const res = await fetch("/api/breakout", {
         method: "POST",
@@ -54,14 +73,15 @@ export default function BreakoutSidebar({ onClose }: { onClose: () => void }) {
         body: JSON.stringify({
           action: "stop",
           originalRoom: room.name,
-          breakoutRooms: [`${room.name}-breakout-1`, `${room.name}-breakout-2`],
+          breakoutRooms: activeBreakoutRooms.length > 0 ? activeBreakoutRooms : Array.from({ length: numRooms }, (_, i) => `${room.name}-breakout-${i + 1}`),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert("Breakout rooms ended! Participants are returning.");
+      setActiveBreakoutRooms([]);
+      setStatusMsg("Breakout rooms ended. Participants can rejoin the main room.");
     } catch (e: any) {
-      alert("Failed to end breakouts: " + e.message);
+      setStatusMsg("Failed to end breakouts: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -81,27 +101,55 @@ export default function BreakoutSidebar({ onClose }: { onClose: () => void }) {
       
       <div className="sidebar-body sidebar-body-breakout">
         <p className="breakout-desc">
-          Automatically divide the {participants.length} current participants into 2 breakout rooms.
+          Divide participants into separate breakout rooms with their own audio/video and translation.
         </p>
+
+        <div className="breakout-controls">
+          <label className="breakout-label">
+            Number of rooms:
+            <select
+              className="settings-select"
+              value={numRooms}
+              onChange={(e) => setNumRooms(Number(e.target.value))}
+              disabled={loading || activeBreakoutRooms.length > 0}
+            >
+              <option value={2}>2 Rooms</option>
+              <option value={3}>3 Rooms</option>
+              <option value={4}>4 Rooms</option>
+            </select>
+          </label>
+        </div>
 
         <button 
           onClick={handleStartBreakout}
-          disabled={loading || participants.length === 0}
+          disabled={loading || activeBreakoutRooms.length > 0}
           className="btn btn-accent breakout-btn"
           data-loading={loading ? "true" : "false"}
-          data-disabled={participants.length === 0 ? "true" : "false"}
         >
-          Start Breakout Rooms
+          {activeBreakoutRooms.length > 0 ? "Breakout Rooms Active" : "Start Breakout Rooms"}
         </button>
 
         <button 
           onClick={handleEndBreakout}
-          disabled={loading}
+          disabled={loading || activeBreakoutRooms.length === 0}
           className="btn btn-dark breakout-btn"
           data-loading={loading ? "true" : "false"}
         >
           End Breakout Rooms
         </button>
+
+        {statusMsg && (
+          <p className="breakout-status">{statusMsg}</p>
+        )}
+
+        {activeBreakoutRooms.length > 0 && (
+          <div className="breakout-room-list">
+            <p className="breakout-room-list-title">Active Rooms:</p>
+            {activeBreakoutRooms.map(r => (
+              <div key={r} className="breakout-room-chip">{r}</div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -37,6 +37,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# electron
+/dist-electron/
+
+# standalone next.js build used by electron
+.standalone/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

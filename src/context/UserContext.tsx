@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 export type UserProfile = {
   id: string;
@@ -23,6 +24,9 @@ export type UserProfile = {
   show_captions?: boolean;
   mute_original_audio?: boolean;
   translate_audio_playback?: boolean;
+  // Recording
+  recording_save_path?: string;
+  recording_auto_start?: boolean;
 };
 
 type UserContextType = {
@@ -33,65 +37,95 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const DEFAULT_PROFILE: UserProfile = {
+  id: "",
+  name: "",
+  theme: "dark",
+  default_language: "en",
+  voice: "Orus",
+  auto_join_audio: false,
+  noise_suppression: true,
+  mirror_video: true,
+  camera_off_on_join: false,
+  video_background: "none",
+  show_captions: true,
+  mute_original_audio: true,
+  translate_audio_playback: true,
+  recording_save_path: "",
+  recording_auto_start: false,
+};
+
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadProfile() {
-      try {
-        // 1. Get or create a local anonymous ID
-        let userId = window.localStorage.getItem("orbitUserId");
-        if (!userId) {
-          userId = crypto.randomUUID();
-          window.localStorage.setItem("orbitUserId", userId);
+      // Wait for auth to settle
+      if (authLoading) return;
+
+      if (!user) {
+        // Not logged in — use anonymous profile for limited functionality
+        let anonId = window.localStorage.getItem("orbitUserId");
+        if (!anonId) {
+          anonId = crypto.randomUUID();
+          window.localStorage.setItem("orbitUserId", anonId);
         }
 
-        // 2. Fetch from Supabase
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
-          .eq("id", userId)
+          .eq("id", anonId)
           .single();
-
-        if (error && error.code !== "PGRST116") {
-          console.error("Error fetching profile:", error);
-        }
 
         if (data) {
           setProfile(data);
           document.documentElement.dataset.theme = data.theme || "dark";
         } else {
-          // Default profile if none exists
-          const defaultProfile: UserProfile = {
-            id: userId,
-            name: "",
-            theme: "dark",
-            default_language: "en",
-            voice: "Orus",
-            auto_join_audio: false,
-            noise_suppression: true,
-            mirror_video: true,
-            camera_off_on_join: false,
-            video_background: "none",
-            show_captions: true,
-            mute_original_audio: true,
-            translate_audio_playback: true,
-          };
-          setProfile(defaultProfile);
-          
-          // Attempt to insert (might fail if table doesn't exist yet, which is fine)
-          try { await supabase.from("profiles").upsert(defaultProfile); } catch { /* table may not exist */ }
+          const anonProfile = { ...DEFAULT_PROFILE, id: anonId };
+          setProfile(anonProfile);
+          try {
+            await supabase.from("profiles").upsert(anonProfile);
+          } catch {
+            /* table may not exist */
+          }
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Logged in — use auth user ID
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (data) {
+          setProfile(data);
+          document.documentElement.dataset.theme = data.theme || "dark";
+        } else {
+          // Profile should have been auto-created by the DB trigger,
+          // but just in case, create it now
+          const newProfile: UserProfile = { ...DEFAULT_PROFILE, id: user.id, name: user.user_metadata?.name || "" };
+          setProfile(newProfile);
+          try {
+            await supabase.from("profiles").upsert(newProfile);
+          } catch {
+            /* table may not exist */
+          }
         }
       } catch (err) {
-        console.error("Failed to load user profile:", err);
+        console.error("Failed to load profile:", err);
       } finally {
         setLoading(false);
       }
     }
 
     loadProfile();
-  }, []);
+  }, [user, authLoading]);
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!profile) return;
@@ -106,7 +140,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.from("profiles").upsert(newProfile);
     } catch (err) {
-      console.error("Failed to sync profile update to Supabase:", err);
+      console.error("Failed to sync profile:", err);
     }
   };
 

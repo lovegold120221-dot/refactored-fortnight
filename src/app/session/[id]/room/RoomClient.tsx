@@ -51,9 +51,23 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
     }
   }, [router, sessionId]);
 
-  // Mint a LiveKit token.
+  // Mint a LiveKit token. For breakout rooms, use pre-generated token if available.
   useEffect(() => {
     if (!displayName) return;
+
+    // Check if this is a breakout room with a pre-generated token
+    const breakoutToken = typeof window !== 'undefined' ? window.sessionStorage.getItem("orbit.breakout-token") : null;
+    const breakoutUrl = typeof window !== 'undefined' ? window.sessionStorage.getItem("orbit.breakout-server-url") : null;
+
+    if (breakoutToken && breakoutUrl) {
+      setToken(breakoutToken);
+      setServerUrl(breakoutUrl);
+      // Clean up so reconnects use normal flow
+      window.sessionStorage.removeItem("orbit.breakout-token");
+      window.sessionStorage.removeItem("orbit.breakout-server-url");
+      return;
+    }
+
     const isHost = typeof window !== 'undefined' && window.localStorage.getItem("orbitHostRoom") === sessionId;
     const url = `/api/token?room=${encodeURIComponent(
       sessionId,

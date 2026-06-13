@@ -149,24 +149,27 @@ export default function ParticipantTile({
           )}
         </div>
         {isHost && (
-          <div className="absolute top-2 right-2 flex space-x-2 z-10">
+          <div className="tile-mod-btns">
             <button 
               onClick={() => handleRequestVideo()} 
               className="tile-mod-btn"
+              title="Request camera on"
             >
-              Req Video
+              📷
             </button>
             <button 
               onClick={() => handleModerate('mute')} 
               className="tile-mod-btn tile-mod-btn-warning"
+              title="Mute microphone"
             >
-              Mute
+              🔇
             </button>
             <button 
               onClick={() => handleModerate('kick')} 
               className="tile-mod-btn tile-mod-btn-error"
+              title="Remove from meeting"
             >
-              Kick
+              ✕
             </button>
           </div>
         )}

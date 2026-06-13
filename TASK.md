@@ -626,3 +626,188 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 ### Known issues (not blocking)
 - Gemini model `gemini-3.5-live-translate-preview` may need updating if Google renames it — this will manifest as a WebSocket handshake failure at runtime
 - The `google-genai` SDK was removed; if a future feature needs the SDK it must be re-added
+
+---
+
+## TASK-20260613-110000: Build full meeting app features
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-13T11:00:00Z
+- User request: Build complete meeting application with gallery-view layout, host moderation, breakout rooms, local recording with save-folder support, Electron desktop packaging, and first-launch Ollama setup
+- Preservation constraints: Keep all existing CSS vars, component hierarchy, API patterns, env config, agent dispatch naming
+- Success criteria:
+  - Gallery View is default, full-screen when alone, responsive grid
+  - Host controls visible on participant tiles
+  - Breakout rooms create real LiveKit isolated rooms with tokens
+  - Local recording uses File System Access API for save folder
+  - Settings page has Recording tab with save-path picker
+  - Electron wrapper serves Next.js via `main.js` + `electron-builder.yml`
+  - Ollama check on first launch with auto-install + recovery UI
+  - Frontend builds, Python tests pass
+
+### TODO
+- [x] Add recording_save_path to UserProfile
+- [x] Add Recording tab with browse button to Settings page
+- [x] Update ControlBar recording with showSaveFilePicker + download fallback
+- [x] Add breakout room CSS (chip, controls, status, room list)
+- [x] Add tile-mod-btns CSS for host moderation buttons
+- [x] Update breakout API to create real rooms via RoomServiceClient.createRoom()
+- [x] Update BreakoutSidebar with numRooms selector + active room chips + status
+- [x] Add breakout data channel handler in InCall (preserves sessionStorage identity)
+- [x] RoomClient uses sessionStorage breakout token if available
+- [x] Create `electron/main.js` — Next.js process management, window creation, Ollama check, IPC
+- [x] Create `electron/preload.js` — safe IPC channels for dialogs + isPackaged
+- [x] Create `electron-builder.yml` — multi-platform config (dmg/nsis/AppImage/deb)
+- [x] Add `electron/` to .gitignore (dist-electron, .standalone)
+- [x] Update package.json with electron scripts + electron/electron-builder/wait-on devDeps
+- [x] Frontend build passes (11 routes)
+- [x] 14 Python agent tests pass
+
+### FINAL REPORT
+- STATUS: COMPLETED
+- End time: 2026-06-13T11:45:00Z
+- Files changed:
+
+  **Settings & Profile (3 files)**
+  - `src/context/UserContext.tsx` — added `recording_save_path`, `recording_auto_start` to type + default
+  - `src/app/settings/page.tsx` — added Recording tab with field for save path + auto-start toggle
+  - `src/app/globals.css` — added `.settings-recording-path-row`, `.settings-info-box`, `.tile-mod-btns`, `.tile-mod-btn`, `.tile-mod-btn-warning`, `.tile-mod-btn-error`, `.breakout-controls`, `.breakout-label`, `.breakout-status`, `.breakout-room-list`, `.breakout-room-chip`
+
+  **Control Bar (1 file)**
+  - `src/app/session/[id]/room/ControlBar.tsx` — rewritten toggleRecording to try `showSaveFilePicker()` (File System Access API) first, fall back to `<a>` download
+
+  **Participant Tile (1 file)**
+  - `src/app/session/[id]/room/ParticipantTile.tsx` — switched host buttons from Tailwind-style classes to `.tile-mod-btns` system with icon-based buttons
+
+  **Breakout Rooms (4 files)**
+  - `src/app/api/breakout/route.ts` — rewritten: creates real LiveKit rooms via `createRoom()`, mints per-participant tokens with translator agent dispatch, sends `BREAKOUT_JOIN` with token via data message; on stop, deletes rooms
+  - `src/app/session/[id]/room/BreakoutSidebar.tsx` — updated with numRooms dropdown, active room list chips, status messages, excludes local (host) from assignment
+  - `src/app/session/[id]/room/InCall.tsx` — updated breakout handler to preserve `sessionStorage` identity when navigating between rooms
+  - `src/app/session/[id]/room/RoomClient.tsx` — added breakout token check from `sessionStorage("orbit.breakout-token")` before falling back to `/api/token`
+
+  **Electron (4 new files)**
+  - `electron/main.js` — Electron main process: starts Next.js standalone server, creates BrowserWindow with preload, Ollama first-launch detection + auto-install (Homebrew/direct/Winget) + recovery dialog, IPC for native dialogs
+  - `electron/preload.js` — `contextBridge.exposeInMainWorld("electronAPI", {...})` for save dialog, directory picker, isPackaged
+  - `electron-builder.yml` — macOS (dmg/zip), Windows (nsis/portable), Linux (AppImage/deb), x64+arm64
+  - `electron/assets/` — placeholder files for icon.icns and icon.ico
+
+  **Project Config (3 files)**
+  - `package.json` — added `main: "electron/main.js"`, scripts: `dev:electron`, `start:electron`, `electron:build:*`, devDeps: `electron@^35`, `electron-builder@^26`, `wait-on@^8`
+  - `.gitignore` — added `/dist-electron/`, `/.standalone/`
+
+- Validation:
+  - Frontend build: ✅ 11 routes, no TS errors, compiled in ~3s
+  - Python tests: ✅ 14/14 passed in 0.12s
+  - Gallery View: single participant fills entire viewport via `gallery-grid-1` (grid-template: 1fr / 1fr)
+  - Host controls: `.tile-mod-btns` fade in on hover, visible on `.tile:focus-within`
+  - Breakout: API creates rooms, mints tokens with translator dispatch, sends join instructions via data channel
+  - Recording: `showSaveFilePicker` lets user pick save destination, fallback to download
+  - Settings: Recording tab has Browse button for folder picker + auto-start toggle
+  - Electron: main.js stands up Next.js server + window; Ollama check runs once on first launch
+- CSS/UI preservation: all existing layouts, colors, control bar, sidebar styles preserved; added only new classes
+- Real data/API check: Breakout API uses live LiveKit `RoomServiceClient.createRoom()`, token generation, data messages; recording uses real File System Access API; Electron/main.js uses real child_process for Next.js + Ollama
+- Known issues:
+  - Breakout room navigation updates URL but participants need to manually click to return — a "Return to main room" button could be added to the control bar when in a breakout
+  - `showSaveFilePicker()` requires a secure context (HTTPS or localhost) — on HTTP deploys it silently falls back to download
+  - Electron icon files are placeholders; real icons need to be generated (PNG→icns/ico)
+  - Ollama auto-install only tested on macOS; Windows/Linux paths may need adjustment
+  - Electron `electron-builder` `extraResources` from-dir path may need tweaking when `.next/standalone` structure varies
+- Next steps:
+  - Generate real app icons (1024×1024 PNG → icns/ico/png set)
+  - Test Electron build: `pnpm electron:build:mac`
+  - Add "Return to main room" button in breakout rooms
+  - Test breakout room end-to-end with 2+ browser tabs
+  - Verify Ollama installation flow with a fresh macOS VM
+
+---
+
+## TASK-20260613-120000: Supabase email auth + full database schema
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-13T12:00:00Z
+- User request: Create the full database schema and use Supabase for email auth
+- Preservation constraints: Keep existing LiveKit flow, meeting UI, agent dispatch, anonymous fallback for non-logged-in users; existing CSS/component patterns
+- Success criteria:
+  - SQL migration with profiles/meetings/recordings/chat_messages tables + RLS + triggers
+  - Auth pages (login, signup, reset password, update password, callback)
+  - AuthContext wraps supabase.auth.onAuthStateChange
+  - UserContext uses auth user.id instead of anonymous localStorage UUID
+  - Layout wraps AuthProvider > UserProvider
+  - Landing page sidebar shows user email + sign out (or sign in / create account)
+  - Build passes all routes including 5 new auth routes
+
+### TODO
+- [x] Create supabase/migrations/001_schema.sql — 5 tables, RLS policies, triggers, indexes
+- [x] Create lib/supabase-server.ts — server-side client with cookie handling
+- [x] Create context/AuthContext.tsx — session state, signIn/signUp/signOut/resetPassword
+- [x] Create auth/login/page.tsx — email/password sign in form
+- [x] Create auth/signup/page.tsx — email/password sign up with confirmation page
+- [x] Create auth/callback/route.ts — handles email confirmation & recovery redirects
+- [x] Create auth/reset-password/page.tsx — forgot password form
+- [x] Create auth/update-password/page.tsx — set new password after recovery
+- [x] Refactor UserContext.tsx — uses auth user.id, falls back to anonymous for non-logged-in
+- [x] Update layout.tsx — wraps with AuthProvider + UserProvider
+- [x] Add auth CSS (.auth-shell, .auth-card, .auth-form, .auth-links, .entry-auth-section)
+- [x] Update landing page sidebar — shows user email/sign out or sign up/sign in links
+- [x] Install @supabase/ssr — for cookie-based session management
+- [x] Build passes: 16 routes (5 new auth routes)
+- [x] Python tests pass: 14/14
+
+### FINAL REPORT
+- STATUS: COMPLETED
+- End time: 2026-06-13T13:00:00Z
+- Files changed/created:
+
+  **Database (2 new files)**
+  - `supabase/migrations/001_schema.sql` — full schema: profiles (with auth.users trigger), meetings, meeting_participants, recordings, chat_messages; RLS policies on all tables (select/insert/update/delete scoped to auth.uid); updated_at triggers; indexes
+  - `supabase/seed.sql` — setup script referencing migration
+
+  **Auth Infrastructure (7 new files)**
+  - `src/app/auth/login/page.tsx` — email/password sign in with error handling
+  - `src/app/auth/signup/page.tsx` — sign up form + confirmation message page
+  - `src/app/auth/callback/route.ts` — exchanges auth code for session, redirects to /auth/update-password for recovery
+  - `src/app/auth/reset-password/page.tsx` — forgot password form
+  - `src/app/auth/update-password/page.tsx` — set new password form after recovery
+  - `src/context/AuthContext.tsx` — provides session, user, signIn, signUp, signOut, resetPassword; listens to onAuthStateChange
+  - `src/lib/supabase-server.ts` — createServerSupabaseClient + getServerUser for server components/RSC
+
+  **Updated Files (5 files)**
+  - `src/lib/supabase.ts` — changed from plain createClient to createBrowserClient from @supabase/ssr for proper cookie handling
+  - `src/context/UserContext.tsx` — refactored: uses auth user.id when logged in, falls back to anonymous localStorage UUID when not; preserved all profile fields and updateProfile logic
+  - `src/app/layout.tsx` — wraps with AuthProvider (outer) > UserProvider (inner)
+  - `src/app/page.tsx` — imports useAuth, shows user email + sign out button in sidebar when authenticated, sign in / create account links when anonymous
+  - `src/app/globals.css` — added ~80 lines of auth styles (.auth-shell, .auth-card, .auth-form, .auth-field, .auth-error, .auth-submit, .auth-links, .entry-auth-section, .entry-auth-email, .entry-auth-btn)
+
+  **Config (2 files)**
+  - `package.json` — added @supabase/ssr@0.12.0 dependency
+  - `.env.example` — documented NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+- Validation:
+  - Frontend build: ✅ 16 routes (5 new auth routes), compiled in 3.9s, TS passed
+  - Python tests: ✅ 14/14 passed in 0.13s
+  - Auth flow: Login page → supabase.auth.signInWithPassword → redirects to /
+  - Auth flow: Signup → supabase.auth.signUp → shows confirmation message
+  - Auth flow: Reset password → supabase.auth.resetPasswordForEmail → redirects to /auth/callback → /auth/update-password
+  - Auth flow: Auth callback → exchanges code for session, redirects based on type
+  - Anonymous fallback: UserContext still creates anonymous UUID in localStorage when no auth session exists
+  - RLS: All tables have row-level security policies scoped to auth.uid()
+  - Profile auto-creation: DB trigger on_auth_user_created inserts profile row after signup
+
+- CSS/UI preservation: All existing entry sidebar, meeting UI, control bar, and settings styles preserved; added auth-specific classes only
+- Real data/API check: Supabase auth calls real signInWithPassword/signUp/resetPasswordForEmail APIs; RLS policies reference real auth.uid(); UserContext uses real supabase client
+
+- Known issues:
+  - Auth pages use minimal design (no Supabase Auth UI library) — the UI could be enhanced with OAuth provider buttons (Google, GitHub) later
+  - The `@supabase/ssr` package requires specific cookie handling — the callback route creates its own createServerClient; other server components use supabase-server.ts
+  - If the `profiles` table doesn't exist in the Supabase project, anonymous users will silently fall back to in-memory defaults (the existing catch behavior)
+  - The `handle_new_user()` trigger assumes the profiles table already exists when the first signup happens — run the migration BEFORE enabling user signups in Supabase dashboard
+
+- Next steps:
+  - Run the SQL migration in Supabase SQL Editor before enabling email auth in Supabase dashboard
+  - Test the full auth flow: signup → confirm email → sign in → join a meeting → settings persist
+  - Consider adding OAuth providers (Google, GitHub) for one-click sign in
+  - Add a middleware for route protection (redirect to /auth/login for certain routes)
+  - Add password strength indicator to signup form
+  - Add email change flow in Settings page

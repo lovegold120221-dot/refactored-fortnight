@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
+import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 
 type ActivePanel = "join" | "schedule";
 
 export default function Home() {
   const router = useRouter();
+  const { user, signOut } = useAuth();
   const [creating, setCreating] = useState(false);
   const [activePanel, setActivePanel] = useState<ActivePanel>("join");
   const [joinValue, setJoinValue] = useState("");
@@ -100,6 +102,18 @@ export default function Home() {
             Settings
           </Link>
         </nav>
+
+        {user ? (
+          <div className="entry-auth-section">
+            <span className="entry-auth-email" title={user.email ?? ""}>{user.email}</span>
+            <button className="entry-auth-btn" onClick={() => signOut()}>Sign out</button>
+          </div>
+        ) : (
+          <div className="entry-auth-section">
+            <Link href="/auth/login" className="entry-auth-btn">Sign in</Link>
+            <Link href="/auth/signup" className="entry-auth-btn">Create account</Link>
+          </div>
+        )}
       </aside>
 
       <section className="entry-main">

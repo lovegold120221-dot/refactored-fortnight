@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 import { UserProvider } from "@/context/UserContext";
 
 export const viewport: Viewport = {
@@ -10,7 +11,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Orbit Meeting",
-  description: "Real-time meeting translation .",
+  description: "Real-time meeting translation.",
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
@@ -25,7 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UserProvider>{children}</UserProvider>
+        <AuthProvider>
+          <UserProvider>{children}</UserProvider>
+        </AuthProvider>
       </body>
     </html>
   );
