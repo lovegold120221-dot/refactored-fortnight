@@ -1,7 +1,7 @@
 # Orbit Meeting — Electron Builder Configuration
 # Builds platform-specific installers from the Next.js standalone build.
 
-appId: ai.orbit.meeting
+appId: ai.eburon.orbit.meeting
 productName: Orbit Meeting
 copyright: Copyright © 2026 Eburon AI
 
@@ -34,9 +34,12 @@ mac:
     - target: zip
       arch: [x64, arm64]
   artifactName: "${productName}-${version}-mac-${arch}.${ext}"
-  hardenedRuntime: true
+  hardenedRuntime: false
   gatekeeperAssess: false
   icon: electron/assets/icon.icns
+  extendInfo:
+    NSMicrophoneUsageDescription: "Orbit Meeting needs microphone access for meetings."
+    NSCameraUsageDescription: "Orbit Meeting needs camera access for video meetings."
 
 win:
   target:
