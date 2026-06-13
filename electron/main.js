@@ -4,7 +4,7 @@
  * Starts the Next.js production server (standalone build) and wraps it in a
  * native window. Runs Ollama availability check on first launch.
  */
-const { app, BrowserWindow, dialog, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, shell, desktopCapturer } = require("electron");
 const path = require("path");
 const { fork } = require("child_process");
 
@@ -193,6 +193,26 @@ async function createWindow() {
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
   });
+
+  // Enable native screen sharing via desktopCapturer.
+  // Without this, navigator.mediaDevices.getDisplayMedia throws
+  // "Not supported" in Electron (Chromium lacks native getDisplayMedia).
+  mainWindow.webContents.session.setDisplayMediaRequestHandler(
+    async (_request, callback) => {
+      try {
+        const sources = await desktopCapturer.getSources({
+          types: ["screen"],
+        });
+        if (sources.length > 0) {
+          callback({ video: sources[0], audio: "loopback" });
+        } else {
+          callback({});
+        }
+      } catch {
+        callback({});
+      }
+    },
+  );
 
   // Start Next.js server and load once ready
   await startServer();
