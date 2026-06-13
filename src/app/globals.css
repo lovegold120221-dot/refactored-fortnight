@@ -1635,7 +1635,7 @@ body {
   color: var(--fg);
 }
 
-.pp-action-btn--warning {
+.pp-action-btn--danger {
   border-color: var(--warning);
   color: var(--warning);
 }
@@ -1644,6 +1644,11 @@ body {
   background: var(--accent-soft);
   color: var(--accent);
   border-color: var(--accent);
+}
+
+.pp-action-btn--danger {
+  border-color: var(--warning);
+  color: var(--warning);
 }
 
 /* Participant rows */
@@ -1797,6 +1802,30 @@ body {
 .pp-more-item:hover {
   background: rgba(255, 255, 255, 0.06);
   color: var(--fg);
+}
+
+.pp-more-item--danger {
+  color: var(--error);
+}
+
+.pp-more-item--danger:hover {
+  background: var(--error-soft);
+  color: var(--error);
+}
+
+/* Icon sizing inside panel rows */
+.pp-row-icons svg,
+.pp-indicator svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pp-host-btn svg,
+.pp-action-btn svg,
+.pp-more-item svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 /* Empty state */

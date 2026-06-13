@@ -250,3 +250,92 @@ export function SettingsIcon() {
     </svg>
   );
 }
+
+export function HandRaiseIcon() {
+  return (
+    <svg {...baseProps}>
+      <path d="M7 10v4a5 5 0 0 0 10 0v-4" />
+      <path d="M10 5v7" />
+      <path d="M14 3v9" />
+      <path d="M18 9v2.5a6 6 0 0 1-6 6H10" />
+    </svg>
+  );
+}
+
+export function PinIcon() {
+  return (
+    <svg {...baseProps}>
+      <path d="m15 3 6 6" />
+      <path d="M9 15 3 21" />
+      <path d="M12 3 3 12l3 3 3 3 9-9-6-6Z" />
+      <line x1="9" y1="15" x2="15" y2="9" />
+    </svg>
+  );
+}
+
+export function SearchIcon() {
+  return (
+    <svg {...baseProps}>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
+export function LockIcon() {
+  return (
+    <svg {...baseProps}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+export function UnlockIcon() {
+  return (
+    <svg {...baseProps}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+    </svg>
+  );
+}
+
+export function PersonIcon() {
+  return (
+    <svg {...baseProps}>
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+export function MoreVerticalIcon() {
+  return (
+    <svg {...baseProps}>
+      <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function InviteIcon() {
+  return (
+    <svg {...baseProps}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" y1="8" x2="19" y2="14" />
+      <line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  );
+}
+
+export function ScreenShareOnIcon() {
+  return (
+    <svg {...baseProps}>
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  );
+}
