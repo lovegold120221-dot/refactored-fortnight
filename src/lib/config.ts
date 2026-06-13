@@ -5,7 +5,7 @@
 
 // Hard cap on participants per room. The token route also embeds this into
 // RoomConfiguration.maxParticipants so the server enforces it.
-export const MAX_PARTICIPANTS = 8;
+export const MAX_PARTICIPANTS = 40;
 
 // Sentinel meaning "no translation, native passthrough."
 export const NATIVE_LANG = "none";

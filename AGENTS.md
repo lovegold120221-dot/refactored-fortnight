@@ -62,7 +62,7 @@ The unique name avoids collisions with stale Cloud Agents registered under commo
 
 | Constant | Frontend | Agent |
 |----------|----------|-------|
-| Max participants | `MAX_PARTICIPANTS = 8` | (token route, hardcoded) |
+| Max participants | `MAX_PARTICIPANTS = 40` | (token route, hardcoded) |
 | Native sentinel | `NATIVE_LANG = "none"` | `NATIVE_LANG = "none"` |
 | Lang attribute key | `PARTICIPANT_LANG_ATTR = "lang"` | `PARTICIPANT_LANG_ATTR = "lang"` |
 | Gemini model | (varies per route) | `GEMINI_MODEL = "gemini-3.5-live-translate-preview"` |

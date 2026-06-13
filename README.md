@@ -13,7 +13,7 @@ Proudly built by [Eburon AI](https://eburon.ai) — founded by Joe Lernout.
 
 Anyone with the link joins as a peer. Each participant picks one language — that's what they speak **and** what they want to hear everyone else in. When someone speaks, a Gemini Live session translates their audio into every other distinct language present in the room, on demand.
 
-- **8-person rooms** by default (configurable)
+- **Up to 40 participants** per room (configurable)
 - **240+ languages** — pick yours from the world's most comprehensive language list
 - **Mic + camera** default off; toggle when you're ready
 - **Captions sidebar** with auto-scroll transcripts in each listener's language
@@ -237,7 +237,7 @@ Caps in `src/lib/config.ts` and `translator/src/config.py` — adjust together:
 
 | Setting                   | Default                             | Where                                |
 |---------------------------|-------------------------------------|--------------------------------------|
-| Max participants per room | 8                                   | token route `MAX_PARTICIPANTS`       |
+| Max participants per room | 40                                  | token route `MAX_PARTICIPANTS`       |
 | Session TTL               | 4h                                  | token route `ttl`                    |
 | Empty-room timeout        | 60s                                 | token route                          |
 | Departure timeout         | 30s                                 | token route                          |
