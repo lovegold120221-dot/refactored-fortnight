@@ -29,7 +29,24 @@ def _fake_participant(identity: str, lang: str | None, *, mic_muted: bool = Fals
     pub.kind = _AUDIO_KIND
     pub.muted = mic_muted
     pub.track = MagicMock(name="track")
+    pub.track.sid = "pub-sid"
+    pub.track.source = rtc.TrackSource.SOURCE_MICROPHONE
     p.track_publications = {"pub-sid": pub}
+    return p
+
+
+def _fake_screen_share_participant(identity: str, lang: str):
+    """Participant with an unmuted screen share audio track."""
+    p = MagicMock()
+    p.identity = identity
+    p.attributes = {PARTICIPANT_LANG_ATTR: lang}
+    pub = MagicMock()
+    pub.kind = _AUDIO_KIND
+    pub.muted = False
+    pub.track = MagicMock(name="screen-audio")
+    pub.track.sid = "ss-aud-1"
+    pub.track.source = rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+    p.track_publications = {"ss-aud-1": pub}
     return p
 
 
@@ -52,7 +69,7 @@ def _router_with(participants):
     for p in participants:
         for pub in p.track_publications.values():
             if pub.kind == _AUDIO_KIND and pub.track:
-                router._speaker_tracks[p.identity] = pub.track
+                router._speaker_tracks.setdefault(p.identity, {})[pub.track.sid] = pub.track
     return router
 
 
@@ -86,8 +103,8 @@ def test_two_different_languages_creates_pair():
     p2 = _fake_participant("p2", "es")
     router = _router_with([p1, p2])
     assert router._compute_desired_sessions() == {
-        ("p1", "es"),
-        ("p2", "en"),
+        ("p1", "pub-sid", "es"),
+        ("p2", "pub-sid", "en"),
     }
 
 
@@ -98,15 +115,16 @@ def test_grill_example_four_participants():
     p3 = _fake_participant("p3", "de")
     p4 = _fake_participant("p4", "de")
     router = _router_with([p1, p2, p3, p4])
+    sid = "pub-sid"
     expected = {
-        ("p1", "es"),
-        ("p1", "de"),
-        ("p2", "en"),
-        ("p2", "de"),
-        ("p3", "en"),
-        ("p3", "es"),
-        ("p4", "en"),
-        ("p4", "es"),
+        ("p1", sid, "es"),
+        ("p1", sid, "de"),
+        ("p2", sid, "en"),
+        ("p2", sid, "de"),
+        ("p3", sid, "en"),
+        ("p3", sid, "es"),
+        ("p4", sid, "en"),
+        ("p4", sid, "es"),
     }
     assert router._compute_desired_sessions() == expected
 
@@ -118,7 +136,7 @@ def test_muted_speaker_does_not_produce_outgoing_sessions():
     p2 = _fake_participant("p2", "es")
     router = _router_with([p1, p2])
     # p1 muted -> no ("p1", *) session. p2 unmuted -> ("p2", "en") to serve p1.
-    assert router._compute_desired_sessions() == {("p2", "en")}
+    assert router._compute_desired_sessions() == {("p2", "pub-sid", "en")}
 
 
 def test_all_speakers_muted_no_sessions():
@@ -138,8 +156,8 @@ def test_listener_with_native_does_not_block_others():
     router = _router_with([p1, p2, p3])
     # p3 wants native; the en<->es pair still needs translation.
     assert router._compute_desired_sessions() == {
-        ("p1", "es"),
-        ("p2", "en"),
+        ("p1", "pub-sid", "es"),
+        ("p2", "pub-sid", "en"),
     }
 
 
@@ -157,6 +175,52 @@ def test_single_pair(speaker_lang, listener_lang, expected_session):
     router = _router_with([speaker, listener])
     sessions = router._compute_desired_sessions()
     if expected_session:
-        assert ("speaker", listener_lang) in sessions
+        assert ("speaker", "pub-sid", listener_lang) in sessions
     else:
         assert sessions == set()
+
+
+def test_screen_share_audio_always_translated():
+    """Screen share audio should be translated even when target lang matches
+    the sharer's declared language (the shared content may be in a different
+    language)."""
+    sharer = _fake_screen_share_participant("sharer", "en")
+    listener = _fake_participant("listener", "en", mic_muted=True)
+    router = _router_with([sharer, listener])
+    sessions = router._compute_desired_sessions()
+    # Same declared lang, but screen share audio should still get translated.
+    assert ("sharer", "ss-aud-1", "en") in sessions
+
+
+def test_screen_share_audio_to_different_lang():
+    """Screen share audio translation to a different target language should also
+    work (same as before, but with new session key format)."""
+    sharer = _fake_screen_share_participant("sharer", "en")
+    listener = _fake_participant("listener", "es", mic_muted=True)
+    router = _router_with([sharer, listener])
+    sessions = router._compute_desired_sessions()
+    assert ("sharer", "ss-aud-1", "es") in sessions
+
+
+def test_screen_share_audio_with_mic_mixed():
+    """A participant sharing screen with audio AND has an active mic should
+    produce sessions for both tracks. The screen share audio session should
+    exist even when target matches source lang; the mic session should not."""
+    sharer = _fake_screen_share_participant("sharer", "en")
+    # Add mic track to the same participant alongside screen share audio
+    mic_pub = MagicMock()
+    mic_pub.kind = _AUDIO_KIND
+    mic_pub.muted = False
+    mic_pub.track = MagicMock(name="mic")
+    mic_pub.track.sid = "mic-1"
+    mic_pub.track.source = rtc.TrackSource.SOURCE_MICROPHONE
+    sharer.track_publications["mic-1"] = mic_pub
+
+    listener = _fake_participant("listener", "en", mic_muted=True)
+    router = _router_with([sharer, listener])
+    sessions = router._compute_desired_sessions()
+
+    # Screen share audio -> translated even to own lang
+    assert ("sharer", "ss-aud-1", "en") in sessions
+    # Mic audio -> NOT translated to own lang (same-language skip)
+    assert ("sharer", "mic-1", "en") not in sessions

@@ -1053,7 +1053,7 @@ body {
 .orbit-titlebar {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
   padding: 8px 16px 4px;
   font-size: 13px;
@@ -1722,11 +1722,6 @@ body {
 
 .room-shell .ctrl-leave {
   margin-left: 0;
-}
-
-.ctrl-label {
-  font-size: 10px;
-  letter-spacing: 0.02em;
 }
 
 .room-shell .ctrl-share {
@@ -2761,14 +2756,6 @@ body {
     background: rgba(255, 255, 255, 0.05);
   }
 
-  .room-shell .ctrl .ctrl-label {
-    font-size: 10px;
-    font-family: var(--font-body);
-    letter-spacing: 0;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.55);
-  }
-
   .room-shell .ctrl .ctrl-icon {
     height: 22px;
   }
@@ -2782,11 +2769,6 @@ body {
   /* Share Screen — green highlight on mobile */
   .ctrl[data-mobile="primary-share"] {
     color: #22c55e !important;
-  }
-
-  .ctrl[data-mobile="primary-share"] .ctrl-label {
-    color: #22c55e !important;
-    font-weight: 500;
   }
 
   .ctrl[data-mobile="primary-share"] .ctrl-icon svg {

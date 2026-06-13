@@ -47,13 +47,18 @@ function parseTranslationTrackName(
  *   translationEnabled=true:
  *     - for each remote human participant P:
  *         ALWAYS subscribe to mic + screen share audio
- *         If !hearNative AND muteOriginal: duck volume to 15%
- *         Else: set volume to 100%
+ *         Mic: If !hearNative AND muteOriginal: duck volume to 15%
+ *              Else: set volume to 100%
+ *         Screen share audio: If muteOriginal: duck volume to 15%
+ *                             Else: set volume to 100%
  *     - for the agent:
- *         subscribe to a translation track IF
+ *         subscribe to a mic translation track IF
  *           target_lang === myLang AND
  *           source speaker's lang !== myLang
- *         else unsubscribe
+ *         subscribe to a screen_share_audio translation track IF
+ *           target_lang === myLang
+ *         (screen share content may be in a different language than
+ *          the sharer's declared language, so we always translate it)
  */
 export function useTranslationRouting(
   myLang: string,
@@ -117,16 +122,24 @@ function applyHumanSubscriptions(
     
     // Always subscribe to human tracks so we can duck them instead of muting completely
     setSubscribed(pub, true);
+
+    const isScreenShareAudio = pub.source === Track.Source.ScreenShareAudio;
     
     if (pub.track && pub.track instanceof Track) {
-      // livekit-client Track class has a setVolume method (inherited or directly on RemoteAudioTrack)
-      // Since it's an audio track, we cast and call it if it exists.
       const audioTrack = pub.track as Track & { setVolume?: (volume: number) => void };
       if (typeof audioTrack.setVolume === "function") {
-        if (!translationEnabled || hearNative || !muteOriginal) {
+        if (!translationEnabled || !muteOriginal) {
           audioTrack.setVolume(1.0);
+        } else if (isScreenShareAudio) {
+          // Screen share audio (e.g. a video in another tab) may be in a
+          // different language than the sharer's declared lang. Always duck
+          // it when translation is on so the translated version is primary.
+          audioTrack.setVolume(0.15);
+        } else if (!hearNative) {
+          // Mic audio: duck only when the speaker's language differs from ours.
+          audioTrack.setVolume(0.15);
         } else {
-          audioTrack.setVolume(0.15); // Duck the volume
+          audioTrack.setVolume(1.0);
         }
       }
     }
@@ -153,10 +166,22 @@ function applyAgentSubscriptions(
     }
 
     const matchesMe = parsed.targetLang === myLang;
-    const speakerLang = peerLangs.get(parsed.sourceIdentity);
-    const speakerNotMyLang = speakerLang !== myLang;
+    if (!matchesMe) {
+      setSubscribed(pub, false);
+      continue;
+    }
 
-    setSubscribed(pub, matchesMe && speakerNotMyLang);
+    if (parsed.trackSource === "screen_share_audio") {
+      // Screen share content (e.g. a video in a different language) doesn't
+      // respect the sharer's declared language. Always translate it when
+      // the user wants this target language.
+      setSubscribed(pub, true);
+    } else {
+      // Mic translation: only subscribe when the speaker's declared language
+      // differs from ours — same-language pairs hear each other natively.
+      const speakerLang = peerLangs.get(parsed.sourceIdentity);
+      setSubscribed(pub, speakerLang !== myLang);
+    }
   }
 }
 

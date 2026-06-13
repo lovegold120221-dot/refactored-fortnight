@@ -176,7 +176,7 @@ class TranslationRouter:
                 
                 # Determine a source name to help the frontend logic.
                 # If it's screen share audio, use "screen_share_audio", else "mic".
-                source_str = "screen_share_audio" if track.source == rtc.TrackSource.SOURCE_SCREEN_SHARE_AUDIO else "mic"
+                source_str = "screen_share_audio" if track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO else "mic"
 
                 session = GeminiSession(
                     room=self._room,
@@ -206,9 +206,12 @@ class TranslationRouter:
         speakers = self._active_speakers()
 
         desired: set[SessionKey] = set()
-        for speaker_identity, track_sid, source_lang in speakers:
+        for speaker_identity, track_sid, source_lang, is_screen_share in speakers:
             for tgt in target_langs:
-                if tgt == source_lang:
+                # Screen share audio (e.g. a video playing in a shared tab) may
+                # be in any language regardless of the sharer's declared lang.
+                # Always create translation sessions for it.
+                if not is_screen_share and tgt == source_lang:
                     continue
                 desired.add((speaker_identity, track_sid, tgt))
         return desired
@@ -222,9 +225,10 @@ class TranslationRouter:
                 langs.add(lang)
         return langs
 
-    def _active_speakers(self) -> list[tuple[str, str, str]]:
-        """List of (identity, track_sid, lang) for speakers that have enabled audio tracks."""
-        out: list[tuple[str, str, str]] = []
+    def _active_speakers(self) -> list[tuple[str, str, str, bool]]:
+        """List of (identity, track_sid, lang, is_screen_share) for speakers
+        that have enabled audio tracks."""
+        out: list[tuple[str, str, str, bool]] = []
         for p in self._room.remote_participants.values():
             lang = (p.attributes or {}).get(PARTICIPANT_LANG_ATTR)
             if not lang or lang == NATIVE_LANG:
@@ -233,7 +237,8 @@ class TranslationRouter:
             tracks = self._speaker_tracks.get(p.identity, {})
             for track_sid, track in tracks.items():
                 if self._is_track_unmuted(p, track_sid):
-                    out.append((p.identity, track_sid, lang))
+                    is_ss = track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                    out.append((p.identity, track_sid, lang, is_ss))
         return out
 
     def _is_track_unmuted(self, p: rtc.RemoteParticipant, track_sid: str) -> bool:
