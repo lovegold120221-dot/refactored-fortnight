@@ -16,7 +16,6 @@ import { getLanguageByCode } from "@/lib/languages";
 import { useTranslationRouting } from "./useTranslationRouting";
 
 import ControlBar from "./ControlBar";
-import CaptionsSidebar from "./CaptionsSidebar";
 import ParticipantsPanel from "./ParticipantsPanel";
 import ChatSidebar from "./ChatSidebar";
 import BreakoutSidebar from "./BreakoutSidebar";
@@ -37,7 +36,8 @@ export default function InCall({
   const remotes = useRemoteParticipants();
   const [lang, setLang] = useState(initialLang);
   const [translationEnabled, setTranslationEnabled] = useState(true);
-  const [muteOriginal, setMuteOriginal] = useState(true);
+  const [muteOriginal, setMuteOriginal] = useState(false);
+  const [translateScreenShare, setTranslateScreenShare] = useState(true);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [headerCopied, setHeaderCopied] = useState(false);
@@ -109,7 +109,7 @@ export default function InCall({
     };
   }, [room, localParticipant, lang]);
 
-  useTranslationRouting(lang, translationEnabled, muteOriginal, true);
+  useTranslationRouting(lang, translationEnabled, true, true);
 
   // Speaker mute toggle — mutes/unmutes all <audio> elements in the page
   // (both remote mic tracks and agent translation tracks).
@@ -138,11 +138,11 @@ export default function InCall({
   const hasScreenShare = screenShareTracks.length > 0;
 
   const allParticipants = [localParticipant, ...humanRemotes];
-  const captionsOpen = activeSidebar === "captions";
 
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/session/${room.name}`
     : "";
+  const captionsOpen = activeSidebar === "captions";
 
   async function copyShareLink() {
     if (!shareUrl) return;
@@ -224,14 +224,6 @@ export default function InCall({
               onToggleChat={() => toggleSidebar("chat")}
             />
           )}
-          {activeSidebar === "captions" && (
-            <CaptionsSidebar
-              open={true}
-              onClose={() => setActiveSidebar(null)}
-              myLang={lang}
-              peerLangs={peerLangs}
-            />
-          )}
           {activeSidebar === "translation" && (
             <OrbitTranslationPanel
               onClose={() => setActiveSidebar(null)}
@@ -243,6 +235,8 @@ export default function InCall({
               onToggleMuteOriginal={() => setMuteOriginal((v) => !v)}
               captionsOpen={captionsOpen}
               onToggleCaptions={() => toggleSidebar("captions")}
+              translateScreenShare={translateScreenShare}
+              onToggleTranslateScreenShare={() => setTranslateScreenShare((v) => !v)}
             />
           )}
           {activeSidebar === "chat" && (

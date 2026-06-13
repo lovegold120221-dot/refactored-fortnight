@@ -1774,6 +1774,31 @@ body {
   opacity: 1;
 }
 
+.pp-row-chat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--fg-ghost);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.pp-row-chat:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+}
+
+.pp-row-chat svg {
+  width: 14px;
+  height: 14px;
+}
+
 .pp-row-more {
   display: flex;
   align-items: center;

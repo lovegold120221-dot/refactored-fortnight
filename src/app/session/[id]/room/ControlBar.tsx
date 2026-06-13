@@ -254,14 +254,6 @@ export default function ControlBar({
           dataMobile="overflow"
         />
         <CtrlButton
-          active={activeSidebar === "captions"}
-          onClick={() => onToggleSidebar("captions")}
-          label="Captions"
-          icon={<CaptionsIcon />}
-          dataMobile="overflow"
-          hasCaret
-        />
-        <CtrlButton
           active={isLocalRecording}
           onClick={toggleRecording}
           label="Record"

@@ -230,7 +230,7 @@ function SelfRow({
         <button
           className="pp-self-icon-btn"
           onClick={onToggleChat}
-          title="Chat"
+          title="Public Chat"
         >
           <ChatIcon />
         </button>
@@ -285,6 +285,9 @@ function ParticipantRow({
             {screenSharing && <ScreenShareOnIcon />}
           </div>
         </div>
+        <button className="pp-row-chat" onClick={(e) => { e.stopPropagation(); onToggle(); }} title={`Chat with ${name}`}>
+          <ChatIcon />
+        </button>
         <button className="pp-row-more" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
           <MoreVerticalIcon />
         </button>
