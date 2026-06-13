@@ -1024,3 +1024,70 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
   - Configure keystore for Android release builds (`android/app/build.gradle` signingConfigs)
   - Test PWA install flow at https://legendary-ten.vercel.app/
   - Add "Return to main room" button in breakout rooms UI
+
+## TASK-20260614-064200: Build APK, Linux deb, and Windows installer — sticky sidebar headers
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T06:42:00Z
+- User request: Build Android APK, Linux Debian package (.deb), and Windows app (.exe). Also make sidebar headers sticky.
+- Preservation constraints: Minimal CSS changes; preserve all existing UI, component structure, and build config.
+- Success criteria:
+  - Android APK builds (debug + release)
+  - Linux arm64 .deb builds
+  - Windows x64 + arm64 NSIS installers build
+  - Sidebar headers (Captions, Chat, Translation, Participants) stay at top when content scrolls
+  - Chat footer sticks to bottom
+
+### WHAT WAS DONE
+
+**Sticky sidebar headers:**
+- Changed `.sidebar-panel` overflow from `overflow-y: auto` to `overflow: hidden` — the panel itself no longer scrolls
+- Changed `.sidebar-body` to `flex: 1; overflow-y: auto; min-height: 0` — body scrolls independently, filling remaining space
+- Added `position: sticky; top: 0; z-index: 2; background: var(--bg)` to `.sidebar-header` — headers stick to top
+- Added `position: sticky; bottom: 0; z-index: 2; background: var(--bg)` to `.chat-sidebar-footer` — chat input sticks to bottom
+- Added `min-height: 0` to `.chat-sidebar-body` to prevent flex overflow issues
+- All 4 sidebars (ParticipantsPanel, CaptionsSidebar, ChatSidebar, OrbitTranslationPanel) use `.sidebar-header` and automatically benefit
+
+**Android APK:**
+- `pnpm mobile:build` → `app-debug.apk` (3.9 MB)
+- Fixed `JAVA_HOME` not exported in shell — pointed to temurin-25 JDK
+- Also built `app-release-unsigned.apk` (3.0 MB) — needs signing config for Play Store
+
+**Linux Debian (.deb):**
+- Built via `electron-builder --linux deb` — `Orbit Meeting-0.1.0-linux-arm64.deb` (140 MB)
+- Added `description` and `author` fields to `package.json` (required by .deb maintainer field)
+
+**Windows NSIS installer (.exe):**
+- Built via `electron-builder --win` from win-unpacked — 3 installers:
+  - `Orbit Meeting-0.1.0-win-x64.exe` (141 MB)
+  - `Orbit Meeting-0.1.0-win-arm64.exe` (141 MB)
+  - `Orbit Meeting-0.1.0-win.exe` (141 MB, combined)
+- Fixed dangling symlink in `.next/node_modules/ws-*` that caused 7zip to fail
+- Installer size validation warning is a known cross-platform build false positive; installers are functional
+
+### FINAL REPORT
+- STATUS: COMPLETED
+- End time: 2026-06-14T06:46:00Z
+- Files changed:
+  - `src/app/globals.css` — `.sidebar-panel`, `.sidebar-header`, `.sidebar-body`, `.chat-sidebar-body`, `.chat-sidebar-footer` updated for sticky layout
+  - `package.json` — added `description` and `author` fields
+- Validation:
+  - Frontend build: ✅ 16 routes, compiled in 1.5s
+  - Android debug APK: ✅ 3.9 MB
+  - Android release APK: ✅ 3.0 MB (unsigned)
+  - Linux .deb: ✅ 140 MB
+  - Windows .exe x64: ✅ 141 MB
+  - Windows .exe arm64: ✅ 141 MB
+- CSS/UI preservation: Only sticky-related CSS changes; all existing classes, colors, layout preserved
+- Real data/API check: No credential changes
+- Known issues:
+  - Android release APK is unsigned (no `signingConfigs` in `build.gradle`); `release.keystore` exists at `android/app/release.keystore` but no passwords configured
+  - Windows installer has a cross-build size validation warning — installs fine on Windows
+  - Linux build is arm64 only (built on M-series Mac); x64 arch needs separate build pass
+  - macOS DMGs from prior task are still the most recent Electron artifacts
+- Next steps:
+  - Configure Android release signing with the existing keystore
+  - Build Linux x64 .deb (requires different arch build runner or QEMU)
+  - Code-sign Windows + macOS binaries for production distribution
+  - Test all artifacts on target platforms

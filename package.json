@@ -1,6 +1,8 @@
 {
   "name": "gemini-live-translate-livekit",
   "version": "0.1.0",
+  "description": "Orbit Meeting — AI-powered real-time voice translation",
+  "author": "Eburon AI <hello@eburon.ai>",
   "private": true,
   "packageManager": "pnpm@10.18.0",
   "scripts": {

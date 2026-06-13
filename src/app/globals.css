@@ -1283,8 +1283,7 @@ body {
   background: var(--bg);
   border-left: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -1297,6 +1296,10 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: var(--fg);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg);
 }
 
 .sidebar-close {
@@ -1476,6 +1479,9 @@ body {
   flex-direction: column;
   gap: 8px;
   padding: 12px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .sidebar-panel::-webkit-scrollbar {
@@ -5273,6 +5279,7 @@ html[data-theme="light"] .tile-name {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
 }
 
 .chat-sidebar-empty {
@@ -5306,6 +5313,10 @@ html[data-theme="light"] .tile-name {
 .chat-sidebar-footer {
   padding: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--bg);
 }
 
 .chat-sidebar-form {
