@@ -1279,26 +1279,27 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border-light);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--fg);
 }
 
 .sidebar-close {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--fg-ghost);
   cursor: pointer;
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .sidebar-close:hover {
-  color: #fff;
+  color: var(--fg);
 }
 
 .pp-mute-all-btn {
@@ -1347,26 +1348,44 @@ body {
 
 .otp-header-row {
   gap: 6px;
+  flex-wrap: nowrap;
 }
 
 .otp-header-select {
   flex: 1;
   min-width: 0;
-  background: var(--surface-strong);
+  background: var(--bg-inset);
   border: 1px solid var(--border);
   color: var(--fg);
   font-size: 12px;
   font-weight: 500;
-  padding: 5px 8px;
-  border-radius: 6px;
+  padding: 6px 28px 6px 10px;
+  border-radius: 8px;
   font-family: inherit;
   cursor: pointer;
   outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238d96a6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.otp-header-select:hover {
+  border-color: var(--accent);
+  background-color: var(--surface-strong);
+}
+
+.otp-header-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.15);
 }
 
 .otp-header-select option {
   background: var(--bg-elevated);
   color: var(--fg);
+  padding: 8px;
 }
 
 .otp-radio-toggle {
