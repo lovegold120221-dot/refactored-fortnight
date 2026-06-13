@@ -1,10 +1,23 @@
-/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
-import { useChat, useRoomContext } from "@livekit/components-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useLocalParticipant,
+  useRoomContext,
+  useDataChannel,
+} from "@livekit/components-react";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@/context/UserContext";
-import { useState, useRef, useEffect } from "react";
+
+type ChatMessage = {
+  id: string;
+  from: string;
+  fromId: string;
+  message: string;
+  timestamp: number;
+};
+
+const CHAT_TOPIC = "orbit_chat";
 
 export default function ChatSidebar({
   onClose,
@@ -13,41 +26,62 @@ export default function ChatSidebar({
   onClose: () => void;
   privateTo?: string;
 }) {
-  const { send, chatMessages } = useChat();
+  const { localParticipant } = useLocalParticipant();
   const room = useRoomContext();
   const { profile } = useUser();
-  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [text, setText] = useState("");
   const bodyRef = useRef<HTMLDivElement | null>(null);
 
+  // Listen for incoming chat messages
+  useDataChannel(CHAT_TOPIC, useCallback((msg: { payload: Uint8Array }) => {
+    try {
+      const payload = JSON.parse(new TextDecoder().decode(msg.payload)) as ChatMessage;
+      setMessages((prev) => [...prev, payload]);
+    } catch {}
+  }, []));
+
+  // Auto-scroll
   useEffect(() => {
     if (!bodyRef.current) return;
     bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
-  }, [chatMessages]);
+  }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (message.trim()) {
-      const text = message.trim();
-      send(text);
-      
-      // Save to Supabase if it is a public chat
-      if (!privateTo && profile?.id) {
-        supabase.from("chat_messages").insert({
-          meeting_id: room.name,
-          user_id: profile.id,
-          message: text
-        }).then(({ error }) => {
-          if (error) console.error("Failed to save chat message to Supabase:", error);
-        });
-      }
-      
-      setMessage("");
+  const sendMessage = () => {
+    if (!text.trim() || !localParticipant) return;
+    const msg: ChatMessage = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      from: localParticipant.name || localParticipant.identity || "Unknown",
+      fromId: localParticipant.identity,
+      message: text.trim(),
+      timestamp: Date.now(),
+    };
+
+    const encoder = new TextEncoder();
+    localParticipant.publishData(encoder.encode(JSON.stringify(msg)), {
+      topic: CHAT_TOPIC,
+      reliable: true,
+    });
+
+    // Add locally
+    setMessages((prev) => [...prev, msg]);
+    setText("");
+
+    // Save public chat to Supabase
+    if (!privateTo && profile?.id) {
+      supabase.from("chat_messages").insert({
+        meeting_id: room.name,
+        user_id: profile.id,
+        message: msg.message,
+      }).then(({ error }) => {
+        if (error) console.error("Failed to save chat:", error);
+      });
     }
   };
 
-  const filtered = privateTo
-    ? chatMessages.filter((m) => m.from?.identity === privateTo || m.from?.name === privateTo)
-    : chatMessages;
+  const display = privateTo
+    ? messages.filter((m) => m.fromId === privateTo || m.from === privateTo)
+    : messages;
 
   return (
     <div className="sidebar-panel">
@@ -59,16 +93,16 @@ export default function ChatSidebar({
           </svg>
         </button>
       </div>
-      
+
       <div ref={bodyRef} className="sidebar-body chat-sidebar-body">
-        {filtered.length === 0 ? (
+        {display.length === 0 ? (
           <div className="chat-sidebar-empty">No messages yet. Say hi!</div>
         ) : (
-          filtered.map((msg, i) => (
-            <div key={i} className="chat-sidebar-msg-wrapper">
+          display.map((msg) => (
+            <div key={msg.id} className="chat-sidebar-msg-wrapper">
               <div className="chat-sidebar-msg-header">
-                <strong>{msg.from?.name || msg.from?.identity || "Unknown"}</strong>
-                <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <strong>{msg.from}</strong>
+                <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
               <div className="chat-sidebar-msg-content">{msg.message}</div>
             </div>
@@ -77,9 +111,18 @@ export default function ChatSidebar({
       </div>
 
       <div className="chat-sidebar-footer">
-        <form onSubmit={handleSubmit} className="chat-sidebar-form">
-          <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type a message..." className="chat-sidebar-input" />
-          <button type="submit" disabled={!message.trim()} className="chat-sidebar-btn">Send</button>
+        <form
+          onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+          className="chat-sidebar-form"
+        >
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type a message..."
+            className="chat-sidebar-input"
+          />
+          <button type="submit" disabled={!text.trim()} className="chat-sidebar-btn">Send</button>
         </form>
       </div>
     </div>
