@@ -486,6 +486,8 @@ body {
 .room-shell {
   position: relative;
   height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
   width: 100vw;
   /* Flex row so the sidebar can animate as a pure width transition on a flex
      child — the room flex:1 column reflows continuously. Grid-template-columns
@@ -3579,8 +3581,12 @@ html[data-theme="dark"] .auth-logo-bg {
     justify-content: space-between;
     width: 100%;
     padding: 8px 12px;
+    padding-top: max(env(safe-area-inset-top), 8px);
     min-height: 48px;
     background: #000000;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
 
   .orbit-header {
@@ -3716,6 +3722,9 @@ html[data-theme="dark"] .auth-logo-bg {
     padding: 8px 0 max(env(safe-area-inset-bottom), 8px);
     background: #000000;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
   }
 
   /* Hide the 3-column layout divs — flatten everything */
