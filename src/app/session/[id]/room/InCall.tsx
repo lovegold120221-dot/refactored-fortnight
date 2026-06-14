@@ -21,7 +21,7 @@ import BreakoutSidebar from "./BreakoutSidebar";
 import ScreenShareView from "./ScreenShareView";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
 import GalleryView from "./GalleryView";
-import { SpeakerIcon, ChevronDownIcon, LinkIcon, ShieldCheckIcon } from "./icons";
+import { SpeakerIcon, SpeakerOffIcon, ChevronDownIcon, LinkIcon, ShieldCheckIcon } from "./icons";
 
 export default function InCall({
   initialLang,
@@ -134,29 +134,40 @@ export default function InCall({
 
   useTranslationRouting(lang, translationEnabled, true, true);
 
-  // Speaker mute toggle — mutes/unmutes source audio (human mic/screen share).
-  // Agent translator audio tracks are NOT affected — controlled separately.
+  // Enforce all mute states on all current AND future audio elements
   useEffect(() => {
-    const audios = document.querySelectorAll<HTMLAudioElement>("audio");
-    for (const el of audios) {
-      const trackId = el.dataset.lkTrackId;
-      // Only mute human source tracks (non-agent, not translation-named)
-      if (trackId && !trackId.startsWith("tx:")) {
-        el.muted = speakerMuted;
+    const applyMute = () => {
+      const audios = document.querySelectorAll<HTMLAudioElement>("audio");
+      for (const el of audios) {
+        const trackId = el.dataset.lkTrackId;
+        if (trackId) {
+          if (trackId.startsWith("tx:")) {
+            el.muted = translatorMuted;
+          } else {
+            el.muted = speakerMuted;
+          }
+        }
       }
-    }
-  }, [speakerMuted]);
+    };
 
-  // Translator mute — mutes/unmutes only the agent translation audio tracks.
-  useEffect(() => {
-    const audios = document.querySelectorAll<HTMLAudioElement>("audio");
-    for (const el of audios) {
-      const trackId = el.dataset.lkTrackId;
-      if (trackId && trackId.startsWith("tx:")) {
-        el.muted = translatorMuted;
+    // Apply immediately
+    applyMute();
+
+    // Re-apply whenever new audio elements are added
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (node.nodeName === "AUDIO" || (node as Element).querySelector?.("audio")) {
+            applyMute();
+            return;
+          }
+        }
       }
-    }
-  }, [translatorMuted]);
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [translatorMuted, speakerMuted]);
 
   const humanRemotes = useMemo(
     () => remotes.filter((p) => p.kind !== ParticipantKind.AGENT),
@@ -199,6 +210,14 @@ export default function InCall({
               <span className="orbit-translation-status orbit-translation-status-text">
                 Translation: {langInfo?.name || lang}
               </span>
+              <button
+                className="orbit-view-btn"
+                onClick={() => setTranslatorMuted(!translatorMuted)}
+                title={translatorMuted ? "Unmute translator" : "Mute translator"}
+                aria-label={translatorMuted ? "Unmute translator" : "Mute translator"}
+              >
+                {translatorMuted ? <SpeakerOffIcon /> : <SpeakerIcon />}
+              </button>
             </div>
             
             <div className="orbit-topbar-right">
