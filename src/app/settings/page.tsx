@@ -110,6 +110,7 @@ export default function SettingsPage() {
       {/* Header */}
       <header className="settings-topbar">
         <div className="settings-topbar-left">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon-eburon.svg" alt="Eburon AI" className="settings-brand-logo" />
           <span className="settings-brand">Orbit Meeting</span>
         </div>
@@ -386,8 +387,9 @@ export default function SettingsPage() {
                               window.localStorage.setItem('orbit.recording-dir-handle', JSON.stringify({ name: dir.name }));
                             }
                           }
-                        } catch (e: any) {
-                          if (e.name !== 'AbortError' && e.name !== 'SecurityError') {
+                        } catch (e: unknown) {
+                          const err = e as Error;
+                          if (err.name !== 'AbortError' && err.name !== 'SecurityError') {
                             console.warn("Directory picker failed:", e);
                           }
                         }
