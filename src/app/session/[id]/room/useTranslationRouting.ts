@@ -58,6 +58,8 @@ export function useTranslationRouting(
   translationEnabled: boolean = true,
   muteOriginal: boolean = true,
   translateScreenShare: boolean = true,
+  translatorMuted: boolean = false,
+  speakerMuted: boolean = false,
 ) {
   const room = useRoomContext();
 
@@ -74,9 +76,9 @@ export function useTranslationRouting(
 
       for (const p of remotes) {
         if (p.kind === ParticipantKind.AGENT) {
-          applyAgentSubscriptions(p, myLang, peerLangs, translationEnabled, translateScreenShare);
+          applyAgentSubscriptions(p, myLang, peerLangs, translationEnabled, translateScreenShare, translatorMuted);
         } else {
-          applyHumanSubscriptions(p, myLang, translationEnabled, muteOriginal, translateScreenShare);
+          applyHumanSubscriptions(p, myLang, translationEnabled, muteOriginal, translateScreenShare, speakerMuted);
         }
       }
     };
@@ -99,7 +101,7 @@ export function useTranslationRouting(
         room.off(event, handler);
       }
     };
-  }, [room, myLang, translationEnabled, muteOriginal, translateScreenShare]);
+  }, [room, myLang, translationEnabled, muteOriginal, translateScreenShare, translatorMuted, speakerMuted]);
 }
 
 function applyHumanSubscriptions(
@@ -108,6 +110,7 @@ function applyHumanSubscriptions(
   translationEnabled: boolean,
   muteOriginal: boolean,
   translateScreenShare: boolean,
+  speakerMuted: boolean,
 ) {
 
   for (const pub of p.audioTrackPublications.values()) {
@@ -119,9 +122,13 @@ function applyHumanSubscriptions(
     if (pub.track && pub.track instanceof Track) {
       const audioTrack = pub.track as Track & { setVolume?: (volume: number) => void };
       if (typeof audioTrack.setVolume === "function") {
-        // "Mute original" ducks source to 15% — still audible behind translation.
-        // OFF = original at 100% alongside translation.
-        audioTrack.setVolume(muteOriginal ? 0.15 : 1.0);
+        if (speakerMuted) {
+          audioTrack.setVolume(0);
+        } else {
+          // "Mute original" ducks source to 15% — still audible behind translation.
+          // OFF = original at 100% alongside translation.
+          audioTrack.setVolume(muteOriginal ? 0.15 : 1.0);
+        }
       }
     }
   }
@@ -133,6 +140,7 @@ function applyAgentSubscriptions(
   peerLangs: Map<string, string | undefined>,
   translationEnabled: boolean,
   translateScreenShare: boolean,
+  translatorMuted: boolean,
 ) {
   for (const pub of agent.audioTrackPublications.values()) {
     const parsed = parseTranslationTrackName(pub.trackName);
@@ -159,6 +167,13 @@ function applyAgentSubscriptions(
       // Mic translation: subscribe to whatever the agent publishes.
       // The agent decides which sessions to create (single-user mode, etc.)
       setSubscribed(pub, true);
+    }
+
+    if (pub.track && pub.track instanceof Track) {
+      const audioTrack = pub.track as Track & { setVolume?: (volume: number) => void };
+      if (typeof audioTrack.setVolume === "function") {
+        audioTrack.setVolume(translatorMuted ? 0 : 1.0);
+      }
     }
   }
 }

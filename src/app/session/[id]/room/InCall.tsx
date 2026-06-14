@@ -132,42 +132,10 @@ export default function InCall({
     };
   }, [room, localParticipant, lang, handRaised, isHost]);
 
-  useTranslationRouting(lang, translationEnabled, true, true);
+  useTranslationRouting(lang, translationEnabled, true, true, translatorMuted, speakerMuted);
 
-  // Enforce all mute states on all current AND future audio elements
-  useEffect(() => {
-    const applyMute = () => {
-      const audios = document.querySelectorAll<HTMLAudioElement>("audio");
-      for (const el of audios) {
-        const trackId = el.dataset.lkTrackId;
-        if (trackId) {
-          if (trackId.startsWith("tx:")) {
-            el.muted = translatorMuted;
-          } else {
-            el.muted = speakerMuted;
-          }
-        }
-      }
-    };
 
-    // Apply immediately
-    applyMute();
 
-    // Re-apply whenever new audio elements are added
-    const observer = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        for (const node of m.addedNodes) {
-          if (node.nodeName === "AUDIO" || (node as Element).querySelector?.("audio")) {
-            applyMute();
-            return;
-          }
-        }
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [translatorMuted, speakerMuted]);
 
   const humanRemotes = useMemo(
     () => remotes.filter((p) => p.kind !== ParticipantKind.AGENT),
