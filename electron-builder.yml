@@ -27,26 +27,9 @@ asarUnpack:
   - "**/*.node"
   - ".next/server/**"
 
-mac:
-  category: public.app-category.productivity
-  target:
-    - target: dmg
-      arch: [x64, arm64]
-    - target: zip
-      arch: [x64, arm64]
-  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
-  hardenedRuntime: true
-  gatekeeperAssess: false
-  icon: electron/assets/icon.icns
-  extendInfo:
-    NSMicrophoneUsageDescription: "Orbit Meeting needs microphone access for meetings."
-    NSCameraUsageDescription: "Orbit Meeting needs camera access for video meetings."
-  # Signing identity — CI provides CSC_LINK + CSC_KEY_PASSWORD env vars.
-  # For local builds without a cert, set identity to null to skip signing:
-  #   CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac
-  notarize:
-    teamId: ${env.APPLE_TEAM_ID}
-    # Uses APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD env vars for notarization
+# macOS config is passed via CLI args in CI (--config.mac.*) to avoid
+# cross-platform schema validation errors on Linux/Windows with
+# electron-builder 26. See .github/workflows/signed-release.yml.
 
 win:
   target:

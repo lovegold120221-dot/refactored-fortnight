@@ -173,6 +173,7 @@ class GeminiSession:
                     self._consecutive_failures,
                     exc,
                     delay,
+                    exc_info=True,
                 )
                 try:
                     await asyncio.wait_for(self._closed.wait(), timeout=delay)
