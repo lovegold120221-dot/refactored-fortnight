@@ -293,13 +293,6 @@ class GeminiSession:
         return {
             "setup": {
                 "model": f"models/{GEMINI_MODEL}",
-                "systemInstruction": {
-                    "parts": [
-                        {
-                            "text": base_instruction + dialect_instruction,
-                        }
-                    ]
-                },
                 "outputAudioTranscription": {},
                 "inputAudioTranscription": {},
                 "generationConfig": {
