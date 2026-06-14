@@ -1514,6 +1514,51 @@ body {
   word-break: break-word;
 }
 
+/* Split translation panel styles */
+.otp-split-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+.otp-section-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-tertiary);
+  padding: 12px 16px 6px 16px;
+  background: var(--bg);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.otp-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 8px 16px 16px 16px;
+}
+
+.otp-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.otp-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 3px;
+}
+
+.otp-split-divider {
+  border-top: 1px solid var(--border-light);
+  height: 1px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
 .sidebar-body {
   display: flex;
   flex-direction: column;

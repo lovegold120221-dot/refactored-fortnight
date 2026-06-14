@@ -32,7 +32,8 @@ export default function OrbitTranslationPanel({
   const [voice, setVoice] = useState("male1");
   const { textStreams } = useTextStream(TRANSLATION_TOPIC);
   const remotes = useRemoteParticipants();
-  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const sourceBodyRef = useRef<HTMLDivElement | null>(null);
+  const translatedBodyRef = useRef<HTMLDivElement | null>(null);
 
   const names = useMemo(() => {
     const map = new Map<string, string>();
@@ -94,9 +95,17 @@ export default function OrbitTranslationPanel({
   }, [textStreams, myLang, peerLangs]);
 
   useEffect(() => {
-    if (!bodyRef.current) return;
-    bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    if (!sourceBodyRef.current) return;
+    sourceBodyRef.current.scrollTop = sourceBodyRef.current.scrollHeight;
   }, [entries]);
+
+  useEffect(() => {
+    if (!translatedBodyRef.current) return;
+    translatedBodyRef.current.scrollTop = translatedBodyRef.current.scrollHeight;
+  }, [entries]);
+
+  const sourceEntries = entries.filter((e) => e.sourceText);
+  const translatedEntries = entries.filter((e) => e.translatedText);
 
   return (
     <div className="sidebar-panel">
@@ -143,35 +152,53 @@ export default function OrbitTranslationPanel({
         </button>
       </div>
 
-      <div ref={bodyRef} className="sidebar-body">
-        {entries.length === 0 ? (
-          <div className="captions-empty">
-            No transcriptions yet. Translations will appear here as people speak...
-          </div>
-        ) : (
-          entries.map((entry) => (
-            <div className="captions-entry" key={entry.key}>
-              {entry.sourceLang && (
-                <div className="captions-speaker">
-                  <span className="captions-speaker-lang">
-                    {getLanguageByCode(entry.sourceLang)?.name || entry.sourceLang} → {getLanguageByCode(myLang)?.name || myLang}
-                  </span>
-                </div>
-              )}
-              {entry.sourceText && (
+      <div className="sidebar-body otp-split-body">
+        {/* Upper Area: Original Transcription */}
+        <div className="otp-section-header">Original Transcription</div>
+        <div ref={sourceBodyRef} className="otp-scroll-area otp-scroll-area--source">
+          {sourceEntries.length === 0 ? (
+            <div className="captions-empty">
+              No transcriptions yet. Original speech will appear here.
+            </div>
+          ) : (
+            sourceEntries.map((entry) => (
+              <div className="captions-entry" key={entry.key}>
                 <p className="captions-text">
                   <strong>{names.get(entry.sourceIdentity) ?? entry.sourceIdentity}:</strong>{" "}
                   {entry.sourceText}
                 </p>
-              )}
-              {entry.translatedText && (
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="otp-split-divider" />
+
+        {/* Lower Area: Translated Output */}
+        <div className="otp-section-header">Translated Output</div>
+        <div ref={translatedBodyRef} className="otp-scroll-area otp-scroll-area--translated">
+          {translatedEntries.length === 0 ? (
+            <div className="captions-empty">
+              No translations yet. Translated speech will appear here.
+            </div>
+          ) : (
+            translatedEntries.map((entry) => (
+              <div className="captions-entry" key={entry.key}>
+                {entry.sourceLang && (
+                  <div className="captions-speaker">
+                    <span className="captions-speaker-lang">
+                      {getLanguageByCode(entry.sourceLang)?.name || entry.sourceLang} → {getLanguageByCode(myLang)?.name || myLang}
+                    </span>
+                  </div>
+                )}
                 <p className="captions-text captions-text--translated">
                   <strong>Orbit Translator:</strong> {entry.translatedText}
                 </p>
-              )}
-            </div>
-          ))
-        )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

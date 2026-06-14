@@ -1299,3 +1299,30 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 - `pnpm build` — Next.js build completed successfully.
 - Python tests — 15/15 tests passed.
 
+## TASK-20260614-141000: Split translation sidebar into two vertical sections
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T14:10:00Z
+- User request: Split the translation sidebar into two vertical sections: upper for original transcription (display name prefix) and lower for translated output (Orbit Translator prefix) with independent scroll areas and distinct styling.
+
+### WHAT WAS DONE
+- **Updated `OrbitTranslationPanel.tsx`**:
+  - Replaced the single `bodyRef` with `sourceBodyRef` and `translatedBodyRef` to manage independent auto-scroll behaviors.
+  - Split the JSX rendering into two separate areas: the upper area filters `entries` for `sourceText`, and the lower area filters `entries` for `translatedText`.
+  - Structured the panels with clear section headers (`Original Transcription` and `Translated Output`), an independent scroll area container (`otp-scroll-area`), and a divider line.
+  - Kept the language flow indicator in the lower area, linked to each translated utterance.
+- **Updated `globals.css`**:
+  - Added `.otp-split-body` flex properties to make it fill the vertical space correctly without overflow.
+  - Added `.otp-section-header` mono-spaced typography.
+  - Added `.otp-scroll-area` scrollbar behavior and layout properties.
+  - Added `.otp-split-divider` border rules.
+
+### Files changed
+- `src/app/session/[id]/room/OrbitTranslationPanel.tsx` — Split rendering into source and translation areas with independent refs.
+- `src/app/globals.css` — Added layout, header, scroll, and divider styles for the split sidebar.
+
+### Validation
+- `pnpm build` — Checked, Next.js build completed successfully inside the sandbox.
+- Python tests — Ran unit tests, 15/15 tests passed.
+
