@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@/context/UserContext";
+import { useUser, GlossaryEntry } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { PICKER_LANGUAGES } from "@/lib/languages";
@@ -45,6 +45,7 @@ export default function SettingsPage() {
   const [showCaptions, setShowCaptions] = useState(true);
   const [muteOriginalAudio, setMuteOriginalAudio] = useState(true);
   const [translateAudioPlayback, setTranslateAudioPlayback] = useState(true);
+  const [glossary, setGlossary] = useState<GlossaryEntry[]>([]);
   const [recordingSavePath, setRecordingSavePath] = useState("");
   const [recordingAutoStart, setRecordingAutoStart] = useState(false);
 
@@ -63,6 +64,7 @@ export default function SettingsPage() {
         setShowCaptions(profile.show_captions ?? true);
         setMuteOriginalAudio(profile.mute_original_audio ?? true);
         setTranslateAudioPlayback(profile.translate_audio_playback ?? true);
+        setGlossary(profile.glossary ?? []);
         setRecordingSavePath(profile.recording_save_path ?? "");
         setRecordingAutoStart(profile.recording_auto_start ?? false);
       }, 0);
@@ -90,6 +92,7 @@ export default function SettingsPage() {
       show_captions: showCaptions,
       mute_original_audio: muteOriginalAudio,
       translate_audio_playback: translateAudioPlayback,
+      glossary,
       recording_save_path: recordingSavePath,
       recording_auto_start: recordingAutoStart,
     });
@@ -350,6 +353,68 @@ export default function SettingsPage() {
                     />
                     <span className="slider" />
                   </label>
+                </div>
+
+                {/* ——— Custom Glossary ——— */}
+                <div className="settings-divider" />
+                <div className="settings-glossary-section">
+                  <h3 className="settings-section-title">Custom Glossary</h3>
+                  <p className="settings-hint">
+                    Define terms and phrases that should always be translated in a specific way.
+                    Useful for brand names, technical jargon, or specialized vocabulary.
+                  </p>
+                  <div className="settings-glossary-entries">
+                    {glossary.map((entry, idx) => (
+                      <div key={idx} className="settings-glossary-row">
+                        <input
+                          className="settings-input settings-input-sm"
+                          value={entry.source}
+                          onChange={(e) => {
+                            const next = [...glossary];
+                            next[idx] = { ...next[idx], source: e.target.value };
+                            setGlossary(next);
+                            markDirty();
+                          }}
+                          placeholder="Original term"
+                          aria-label={`Glossary entry ${idx + 1} original term`}
+                        />
+                        <span className="settings-glossary-arrow">→</span>
+                        <input
+                          className="settings-input settings-input-sm"
+                          value={entry.translation}
+                          onChange={(e) => {
+                            const next = [...glossary];
+                            next[idx] = { ...next[idx], translation: e.target.value };
+                            setGlossary(next);
+                            markDirty();
+                          }}
+                          placeholder="Preferred translation"
+                          aria-label={`Glossary entry ${idx + 1} translation`}
+                        />
+                        <button
+                          type="button"
+                          className="settings-glossary-remove"
+                          onClick={() => {
+                            setGlossary(glossary.filter((_, i) => i !== idx));
+                            markDirty();
+                          }}
+                          aria-label={`Remove glossary entry ${idx + 1}`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => {
+                      setGlossary([...glossary, { source: "", translation: "" }]);
+                      markDirty();
+                    }}
+                  >
+                    + Add term
+                  </button>
                 </div>
 
                 {/* ——— Translation Test Playground ——— */}

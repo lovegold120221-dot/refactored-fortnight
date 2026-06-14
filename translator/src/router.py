@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 
+import aiohttp
 from livekit import rtc
 
 from config import (
+    GLOSSARY_ATTR,
     NATIVE_LANG,
     PARTICIPANT_LANG_ATTR,
     RECONCILE_DEBOUNCE_SEC,
@@ -60,6 +63,11 @@ class TranslationRouter:
         @room.on("participant_connected")
         def _on_conn(_: rtc.RemoteParticipant) -> None:
             self._schedule_reconcile()
+
+        @room.on("data_received")
+        def _on_data_received(data: rtc.DataPacket) -> None:
+            if data.topic == "retranslation_request":
+                asyncio.create_task(self._handle_retranslation(data))
 
         @room.on("participant_disconnected")
         def _on_disc(p: rtc.RemoteParticipant) -> None:
@@ -189,6 +197,18 @@ class TranslationRouter:
                     else "mic"
                 )
 
+                # Read glossary from the speaker's participant attributes
+                glossary: list[dict[str, str]] = []
+                if participant:
+                    raw = (participant.attributes or {}).get(GLOSSARY_ATTR, "")
+                    if raw:
+                        try:
+                            parsed = json.loads(raw)
+                            if isinstance(parsed, list):
+                                glossary = parsed
+                        except (json.JSONDecodeError, TypeError):
+                            logger.debug("invalid glossary attr for %s", speaker_identity)
+
                 session = GeminiSession(
                     room=self._room,
                     speaker_identity=speaker_identity,
@@ -196,6 +216,7 @@ class TranslationRouter:
                     track_source=source_str,
                     target_lang=target_lang,
                     gemini_api_key=self._gemini_api_key,
+                    glossary=glossary,
                 )
                 self._sessions[key] = session
                 try:
@@ -312,3 +333,62 @@ class TranslationRouter:
                 task = asyncio.create_task(session.aclose())
                 self._detached_tasks.add(task)
                 task.add_done_callback(self._detached_tasks.discard)
+
+    async def _handle_retranslation(self, data: rtc.DataPacket) -> None:
+        try:
+            payload = json.loads(data.data.decode("utf-8"))
+            key = payload.get("key")
+            source_text = payload.get("sourceText")
+            target_lang = payload.get("target_lang")
+            adjustment = payload.get("adjustment")
+
+            if not key or not source_text or not target_lang or not adjustment:
+                logger.warning("Invalid retranslation request: %s", payload)
+                return
+
+            adjusted_text = await self._retranslate_text(source_text, target_lang, adjustment)
+
+            if adjusted_text:
+                response = {
+                    "key": key,
+                    "text": adjusted_text
+                }
+                await self._room.local_participant.publish_data(
+                    payload=json.dumps(response).encode("utf-8"),
+                    topic="retranslation_response",
+                    reliable=True
+                )
+                logger.info("Retranslation successful for key=%s", key)
+        except Exception as exc:
+            logger.exception("Error handling retranslation: %s", exc)
+
+    async def _retranslate_text(self, text: str, target_lang: str, adjustment: str) -> str:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self._gemini_api_key}"
+
+        prompt = (
+            f"You are a professional real-time translator. "
+            f"Translate the following text into the language with code '{target_lang}'.\n"
+            f"Apply the following style/tone adjustment: {adjustment}.\n"
+            f"Output ONLY the final translated text. Do not include any explanations, markers, or original text.\n\n"
+            f"Original text: {text}"
+        )
+
+        payload = {
+            "contents": [{
+                "parts": [{"text": prompt}]
+            }]
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload) as resp:
+                    if resp.status == 200:
+                        result = await resp.json()
+                        return result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    else:
+                        body = await resp.text()
+                        logger.error("Gemini API error during retranslation status=%d body=%s", resp.status, body)
+                        return ""
+        except Exception as e:
+            logger.error("Failed to call Gemini API for retranslation: %s", e)
+            return ""

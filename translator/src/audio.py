@@ -72,13 +72,13 @@ async def iter_pcm_for_gemini(
     """Read PCM frames from a LiveKit track, downsample to 16 kHz mono,
     yield raw little-endian int16 bytes ready for Gemini Live input.
     Multiplexes so multiple sessions can read from the same track."""
-    
+
     if track.sid not in _track_multiplexers:
         _track_multiplexers[track.sid] = MultiplexedAudioStream(track)
-    
+
     mux = _track_multiplexers[track.sid]
     q = mux.subscribe()
-    
+
     try:
         while True:
             chunk = await q.get()

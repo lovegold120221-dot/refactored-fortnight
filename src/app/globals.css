@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&display=swap');
 
+/* ——— System theme: defaults to dark ——— */
 :root {
   color-scheme: dark;
 
@@ -34,6 +35,41 @@
   --error-soft: rgba(255, 92, 108, 0.16);
 
   --shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+}
+
+/* ——— Auto light theme via system preference ——— */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+
+    --bg: #ffffff;
+    --app-bg: #f2f3f7;
+    --bg-elevated: #f0f0f0;
+    --bg-inset: #e4e7ec;
+    --surface: #ffffff;
+    --surface-strong: #f4f6f9;
+
+    --fg: #000000;
+    --fg-secondary: #333333;
+    --fg-tertiary: #555555;
+    --fg-ghost: #777777;
+
+    --accent: #0056b3;
+    --accent-strong: #003d82;
+    --accent-soft: rgba(0, 86, 179, 0.12);
+
+    --border: #cccccc;
+    --border-light: #e0e0e0;
+
+    --success: #0f8b65;
+    --success-soft: rgba(15, 139, 101, 0.12);
+    --warning: #995c00;
+    --warning-soft: rgba(153, 92, 0, 0.12);
+    --error: #a30009;
+    --error-soft: rgba(163, 0, 9, 0.12);
+
+    --shadow: 0 14px 36px rgba(0, 0, 0, 0.15);
+  }
 }
 
 html[data-theme="light"] {
@@ -1053,6 +1089,7 @@ body {
   padding: 10px 0;
   border-bottom: 1px solid var(--border-light);
   animation: enter 0.32s ease both;
+  cursor: pointer;
 }
 
 .captions-entry:last-child {
@@ -3812,15 +3849,38 @@ html[data-theme="dark"] .auth-logo-bg {
     stroke: #22c55e;
   }
 
-  /* ——— Panels: full screen overlays on mobile ——— */
+  /* ——— Panels: bottom sheet overlays on mobile ——— */
   .sidebar-panel {
-    position: absolute !important;
-    top: 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
     right: 0 !important;
+    top: auto !important;
     width: 100vw !important;
-    height: 100% !important;
+    max-height: 75vh !important;
+    height: auto !important;
     z-index: 50 !important;
     background: var(--bg) !important;
+    border-left: none !important;
+    border-radius: 16px 16px 0 0 !important;
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    overflow-y: auto !important;
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+
+  /* Drag handle indicator — appears at top of every bottom-sheet panel */
+  .sidebar-panel::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--fg-ghost, rgba(255, 255, 255, 0.2));
+    margin: 8px auto 4px;
+    flex-shrink: 0;
   }
 
   .orbit-translation-panel {
@@ -5244,6 +5304,27 @@ html[data-theme="light"] .tile-name {
   }
 }
 
+/* ——— Glassmorphism panel ——— */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+html[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+}
+
 /* ——————————————————————————————————————
    Utility Classes (to replace inline styles)
    —————————————————————————————————————— */
@@ -5513,3 +5594,152 @@ html[data-theme="light"] .tile-name {
 .mic-btn-wrapper {
   display: contents;
 }
+
+/* Retranslation Dialog Styles */
+.retranslate-dialog {
+  margin-top: 10px;
+  padding: 12px;
+  background-color: #12121a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: enter 0.2s ease both;
+}
+
+.retranslate-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8f8f9f;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.retranslate-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.retranslate-btn {
+  background: #1c1c28;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #e2e2e9;
+  font-size: 11px;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.retranslate-btn:hover {
+  background: #28283a;
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.retranslate-custom-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.retranslate-input {
+  flex: 1;
+  background: #09090e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 11px;
+  padding: 5px 9px;
+  font-family: var(--font-body);
+}
+
+.retranslate-input:focus {
+  outline: none;
+  border-color: var(--accent, #6366f1);
+}
+
+.retranslate-cancel-btn {
+  background: transparent;
+  border: none;
+  color: #7b7b8f;
+  font-size: 11px;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.retranslate-cancel-btn:hover {
+  color: #ffffff;
+}
+
+/* ——————————————————————————————————————
+   Glossary section (Settings → Translation)
+   —————————————————————————————————————— */
+.settings-glossary-section {
+  margin-top: 20px;
+}
+
+.settings-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--fg);
+}
+
+.settings-glossary-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.settings-glossary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-glossary-row .settings-input-sm {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.settings-glossary-arrow {
+  color: var(--fg-tertiary);
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.settings-glossary-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg-tertiary);
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.12s;
+}
+
+.settings-glossary-remove:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.btn-sm {
+  font-size: 12px;
+  padding: 6px 14px;
+}
+

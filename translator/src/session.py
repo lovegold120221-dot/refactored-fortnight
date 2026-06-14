@@ -26,6 +26,8 @@ from config import (
     GEMINI_MAX_FAILURES_BEFORE_LONG_BACKOFF,
     GEMINI_MODEL,
     GEMINI_RECONNECT_BACKOFF_SEC,
+    MAX_HISTORY_WORDS,
+    MAX_TRANSCRIPT_HISTORY,
 )
 
 logger = logging.getLogger("translator.session")
@@ -57,6 +59,7 @@ class GeminiSession:
         track_source: str,
         target_lang: str,
         gemini_api_key: str,
+        glossary: list[dict[str, str]] | None = None,
     ) -> None:
         self._room = room
         self._speaker_identity = speaker_identity
@@ -64,6 +67,7 @@ class GeminiSession:
         self._track_source = track_source
         self._target_lang = target_lang
         self._gemini_api_key = gemini_api_key
+        self._glossary = glossary or []
 
         self._audio_source = make_audio_source()
         self._local_track: rtc.LocalAudioTrack | None = None
@@ -71,6 +75,9 @@ class GeminiSession:
         self._consecutive_failures = 0
         self._tasks: list[asyncio.Task] = []
         self._closed = asyncio.Event()
+        # Rolling translation memory: list of (kind, text) tuples where
+        # kind is "source" or "target". Used to re-inject context on reconnect.
+        self._transcript_history: list[tuple[str, str]] = []
 
     # --- Public API ---------------------------------------------------------
 
@@ -243,6 +250,39 @@ class GeminiSession:
             f"IMPORTANT: You MUST translate the input into the language with code '{self._target_lang}'."
         )
 
+        # Inject rolling translation memory (recent transcript context).
+        if self._transcript_history:
+            total_words = 0
+            context_lines: list[str] = []
+            # Walk in reverse (newest first) until we hit the word cap.
+            for kind, text in reversed(self._transcript_history):
+                words = len(text.split())
+                if total_words + words > MAX_HISTORY_WORDS:
+                    break
+                total_words += words
+                prefix = "Speaker said" if kind == "source" else "Translation"
+                context_lines.insert(0, f"  {prefix}: {text}")
+            if context_lines:
+                base_instruction += (
+                    "\n\nIMPORTANT CONTEXT from the conversation so far:\n"
+                    f"{chr(10).join(context_lines)}"
+                )
+
+        # Append glossary terms if defined
+        if self._glossary:
+            glossary_lines = "\n".join(
+                f'  - "{entry["source"]}" → "{entry["translation"]}"'
+                for entry in self._glossary
+                if entry.get("source") and entry.get("translation")
+            )
+            if glossary_lines:
+                base_instruction += (
+                    "\n\nCRITICAL: The speaker has defined the following custom "
+                    "translation glossary. You MUST use these specific translations "
+                    "whenever the original term appears, regardless of context:\n"
+                    f"{glossary_lines}"
+                )
+
         # Language-specific dialect instructions
         dialect_map = {
             "nl-BE": (
@@ -393,6 +433,8 @@ class GeminiSession:
             it = sc.get("inputTranscription")
             if it and it.get("text"):
                 await self._publish_source_transcript(it["text"], final=False)
+                # Append to rolling memory
+                self._append_history("source", it["text"])
                 text_chunks += 1
                 if text_chunks in (1, 10) or text_chunks % 50 == 0:
                     logger.info(
@@ -405,10 +447,23 @@ class GeminiSession:
             if sc.get("turnComplete"):
                 await self._publish_transcript("", final=True)
 
+    def _append_history(self, kind: str, text: str) -> None:
+        """Add an entry to the rolling transcript memory, capping at limits."""
+        text = text.strip()
+        if not text:
+            return
+        self._transcript_history.append((kind, text))
+        # Drop oldest entries if over count limit
+        while len(self._transcript_history) > MAX_TRANSCRIPT_HISTORY:
+            self._transcript_history.pop(0)
+
     async def _publish_transcript(self, text: str, *, final: bool) -> None:
         """Best-effort text-stream publish. Frontend filters by attributes."""
         if not text and not final:
             return
+        # Append target transcript to rolling memory (only on complete utterances)
+        if text:
+            self._append_history("target", text)
         try:
             # Send each chunk as its own text-stream message; frontend appends.
             writer = await self._room.local_participant.stream_text(

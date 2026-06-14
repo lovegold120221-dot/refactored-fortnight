@@ -21,8 +21,18 @@ TRACK_ATTR_TARGET_LANG = "target_lang"
 # Marker value for the `kind` attribute on translator tracks.
 TRANSLATION_TRACK_KIND = "translation"
 
+# --- Translation Memory ---
+
+# Max transcript entries kept in rolling context for session memory.
+MAX_TRANSCRIPT_HISTORY = 30
+# Max words across all history entries before oldest are dropped.
+MAX_HISTORY_WORDS = 600
+
 # Participant attribute carrying each participant's chosen language.
 PARTICIPANT_LANG_ATTR = "lang"
+
+# Participant attribute key for glossary (JSON array of {source, translation}).
+GLOSSARY_ATTR = "orbit_glossary"
 
 # Sentinel meaning "no translation, native passthrough."
 NATIVE_LANG = "none"

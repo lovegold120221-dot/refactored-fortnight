@@ -42,6 +42,7 @@ CREATE TABLE public.profiles (
   translate_audio_playback BOOLEAN DEFAULT true,
   recording_save_path TEXT DEFAULT '',
   recording_auto_start BOOLEAN DEFAULT false,
+  glossary JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

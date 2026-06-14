@@ -4,6 +4,11 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
+export type GlossaryEntry = {
+  source: string;       // original term/phrase
+  translation: string;  // preferred translation
+};
+
 export type UserProfile = {
   id: string;
   name: string;
@@ -24,6 +29,7 @@ export type UserProfile = {
   show_captions?: boolean;
   mute_original_audio?: boolean;
   translate_audio_playback?: boolean;
+  glossary?: GlossaryEntry[];
   // Recording
   recording_save_path?: string;
   recording_auto_start?: boolean;
@@ -51,6 +57,7 @@ const DEFAULT_PROFILE: UserProfile = {
   show_captions: true,
   mute_original_audio: true,
   translate_audio_playback: true,
+  glossary: [],
   recording_save_path: "",
   recording_auto_start: false,
 };

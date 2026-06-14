@@ -33,6 +33,12 @@ const config: CapacitorConfig = {
       androidSplashResourceName: "splash",
     },
   },
+  ios: {
+    // Universal links: https://orbit.eburon.ai/session/*
+    // Configure associated domain in Xcode: Signing & Capabilities → Associated Domains
+    // Add: applinks:orbit.eburon.ai
+    scheme: "orbit",
+  },
 };
 
 export default config;

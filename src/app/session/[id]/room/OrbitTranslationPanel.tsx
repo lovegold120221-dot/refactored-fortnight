@@ -2,8 +2,16 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { PICKER_LANGUAGES, getLanguageByCode } from "@/lib/languages";
-import { useTextStream, useRemoteParticipants } from "@livekit/components-react";
+import { useTextStream, useRemoteParticipants, useLocalParticipant, useDataChannel } from "@livekit/components-react";
 import { SpeakerIcon, SpeakerOffIcon } from "./icons";
+
+interface Entry {
+  key: string;
+  sourceIdentity: string;
+  sourceText: string;
+  translatedText: string;
+  sourceLang: string | undefined;
+}
 
 const VOICES = [
   { id: "male1", name: "Male 1" },
@@ -32,8 +40,56 @@ export default function OrbitTranslationPanel({
   const [voice, setVoice] = useState("male1");
   const { textStreams } = useTextStream(TRANSLATION_TOPIC);
   const remotes = useRemoteParticipants();
+  const { localParticipant } = useLocalParticipant();
   const sourceBodyRef = useRef<HTMLDivElement | null>(null);
   const translatedBodyRef = useRef<HTMLDivElement | null>(null);
+
+  const [adjustingEntry, setAdjustingEntry] = useState<{
+    key: string;
+    text: string;
+    sourceText: string;
+  } | null>(null);
+
+  const [retranslations, setRetranslations] = useState<Record<string, string>>({});
+
+  const TONE_OPTIONS = [
+    { id: "formal", label: "Formal", emoji: "👔" },
+    { id: "casual", label: "Casual", emoji: "😊" },
+    { id: "slang", label: "Slang", emoji: "🤪" },
+    { id: "simple", label: "Simple (ELI5)", emoji: "👶" },
+  ];
+
+  useDataChannel("retranslation_response", (msg) => {
+    try {
+      const decoder = new TextDecoder();
+      const payload = JSON.parse(decoder.decode(msg.payload));
+      if (payload.key && payload.text) {
+        setRetranslations((prev) => ({
+          ...prev,
+          [payload.key]: payload.text,
+        }));
+      }
+    } catch (e) {
+      console.error("Failed to parse retranslation response:", e);
+    }
+  });
+
+  const requestRetranslation = (entry: Entry, tone: string) => {
+    const payload = {
+      key: entry.key,
+      sourceText: entry.sourceText || entry.translatedText,
+      target_lang: myLang,
+      adjustment: tone,
+    };
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(JSON.stringify(payload));
+    localParticipant.publishData(data, {
+      topic: "retranslation_request",
+      reliable: true,
+    });
+    setAdjustingEntry(null);
+  };
 
   const names = useMemo(() => {
     const map = new Map<string, string>();
@@ -48,13 +104,6 @@ export default function OrbitTranslationPanel({
       .filter((s) => s.streamInfo.attributes?.target_lang === myLang)
       .sort((a, b) => a.streamInfo.timestamp - b.streamInfo.timestamp);
 
-    type Entry = {
-      key: string;
-      sourceIdentity: string;
-      sourceText: string;
-      translatedText: string;
-      sourceLang: string | undefined;
-    };
     const out: Entry[] = [];
     const openIdxBySource = new Map<string, number>();
 
@@ -91,8 +140,13 @@ export default function OrbitTranslationPanel({
 
       if (isFinal) openIdxBySource.delete(source);
     }
-    return out;
-  }, [textStreams, myLang, peerLangs]);
+    return out.map((entry) => {
+      if (retranslations[entry.key]) {
+        return { ...entry, translatedText: retranslations[entry.key] };
+      }
+      return entry;
+    });
+  }, [textStreams, myLang, peerLangs, retranslations]);
 
   useEffect(() => {
     if (!sourceBodyRef.current) return;
@@ -184,7 +238,12 @@ export default function OrbitTranslationPanel({
             </div>
           ) : (
             translatedEntries.map((entry) => (
-              <div className="captions-entry" key={entry.key}>
+              <div 
+                className="captions-entry" 
+                key={entry.key}
+                onDoubleClick={() => setAdjustingEntry({ key: entry.key, text: entry.translatedText, sourceText: entry.sourceText })}
+                title="Double click to change tone / re-translate"
+              >
                 {entry.sourceLang && (
                   <div className="captions-speaker">
                     <span className="captions-speaker-lang">
@@ -195,6 +254,40 @@ export default function OrbitTranslationPanel({
                 <p className="captions-text captions-text--translated">
                   <strong>Orbit Translator:</strong> {entry.translatedText}
                 </p>
+                {adjustingEntry?.key === entry.key && (
+                  <div className="retranslate-dialog" onClick={(e) => e.stopPropagation()}>
+                    <div className="retranslate-header">Change Tone / Re-translate</div>
+                    <div className="retranslate-options">
+                      {TONE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          className="retranslate-btn"
+                          onClick={() => requestRetranslation(entry, opt.id)}
+                        >
+                          {opt.emoji} {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="retranslate-custom-row">
+                      <input
+                        type="text"
+                        placeholder="Custom tone (e.g. formal, excited)"
+                        className="retranslate-input"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                            requestRetranslation(entry, e.currentTarget.value.trim());
+                          }
+                        }}
+                      />
+                      <button 
+                        className="retranslate-cancel-btn"
+                        onClick={() => setAdjustingEntry(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { PARTICIPANT_LANG_ATTR } from "@/lib/config";
 import { getLanguageByCode } from "@/lib/languages";
 import { useTranslationRouting } from "./useTranslationRouting";
+import { useUser } from "@/context/UserContext";
 
 import ControlBar from "./ControlBar";
 import ParticipantsPanel from "./ParticipantsPanel";
@@ -33,6 +34,7 @@ export default function InCall({
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
   const remotes = useRemoteParticipants();
+  const { profile } = useUser();
   const [lang, setLang] = useState(initialLang);
   const [translatorMuted, setTranslatorMuted] = useState(false);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
@@ -117,10 +119,15 @@ export default function InCall({
     if (!localParticipant || !room) return;
     const apply = () => {
       if (room.state === ConnectionState.Connected) {
+        // Serialize glossary as JSON string for the agent to read
+        const glossaryStr = profile?.glossary?.length
+          ? JSON.stringify(profile.glossary)
+          : "";
         localParticipant.setAttributes({
           [PARTICIPANT_LANG_ATTR]: lang,
           orbit_hand: handRaised ? "raised" : "",
           orbit_host: isHost ? "true" : "",
+          orbit_glossary: glossaryStr,
         });
       }
     };
@@ -129,7 +136,7 @@ export default function InCall({
     return () => {
       room.off(RoomEvent.Connected, apply);
     };
-  }, [room, localParticipant, lang, handRaised, isHost]);
+  }, [room, localParticipant, lang, handRaised, isHost, profile?.glossary]);
 
   useTranslationRouting(lang, localParticipant.identity, true, true, true, translatorMuted, speakerMuted);
 
