@@ -280,7 +280,7 @@ function ParticipantRow({
         <div className="pp-row-info">
           <div className="pp-row-name-row">
             <span className="pp-name">{name}</span>
-            {isHost && <span className="pp-badge pp-badge--role">Host</span>}
+            {participant.attributes?.orbit_host === "true" && <span className="pp-badge pp-badge--role">Host</span>}
             {langInfo && (
               <span className="pp-badge pp-badge--lang">
                 {langInfo.flag} {needsTranslation ? `→ ${myLang.toUpperCase()}` : langInfo.code.toUpperCase()}
