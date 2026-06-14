@@ -8,6 +8,7 @@
   --font-mono: 'DM Sans', system-ui, sans-serif;
 
   --bg: #0f1115;
+  --app-bg: radial-gradient(ellipse at bottom, #130d26 0%, #030408 80%);
   --bg-elevated: #171a21;
   --bg-inset: #20242d;
   --surface: #171a21;
@@ -39,6 +40,7 @@ html[data-theme="light"] {
   color-scheme: light;
 
   --bg: #ffffff;
+  --app-bg: #f2f3f7;
   --bg-elevated: #f0f0f0;
   --bg-inset: #e4e7ec;
   --surface: #ffffff;
@@ -86,8 +88,8 @@ body {
   font-size: 15px;
   line-height: 1.6;
   color: var(--fg);
-  background: radial-gradient(ellipse at bottom, #130d26 0%, #030408 80%);
-  background-color: #030408;
+  background: var(--app-bg);
+  background-color: var(--bg);
   min-height: 100vh;
 }
 
@@ -2875,9 +2877,6 @@ body {
    Orbit — Room shell background override
    —————————————————————————————————————— */
 
-.room-shell {
-  background: #1a1a1a;
-}
 
 /* ——————————————————————————————————————
    Responsive
@@ -3882,7 +3881,6 @@ html[data-theme="dark"] .auth-logo-bg {
 .entry-shell,
 .auth-shell,
 .settings-shell {
-  background: var(--bg);
   color: var(--fg);
 }
 
@@ -4007,8 +4005,6 @@ html[data-theme="dark"] .auth-logo-bg {
   border-color: var(--accent);
 }
 
-.room-shell,
-.orbit-stage,
 .participants-panel,
 .orbit-header,
 .room-shell .control-bar {
