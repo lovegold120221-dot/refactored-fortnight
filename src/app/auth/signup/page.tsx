@@ -40,7 +40,7 @@ export default function SignupPage() {
       <main className="auth-shell">
         <div className="auth-card">
           <div className="auth-brand">
-            <img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" />
+            <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
             <span>Orbit Meeting</span>
           </div>
           <h1 className="auth-title">Check your email</h1>
@@ -59,7 +59,7 @@ export default function SignupPage() {
     <main className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
-          <img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" />
+          <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
           <span>Orbit Meeting</span>
         </div>
         <h1 className="auth-title">Create account</h1>

@@ -86,7 +86,8 @@ body {
   font-size: 15px;
   line-height: 1.6;
   color: var(--fg);
-  background: var(--bg);
+  background: radial-gradient(ellipse at bottom, #130d26 0%, #030408 80%);
+  background-color: #030408;
   min-height: 100vh;
 }
 
@@ -2921,7 +2922,6 @@ body {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
-  background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
 }
@@ -2961,10 +2961,25 @@ body {
   object-fit: contain;
 }
 
+.auth-logo-bg {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  margin-bottom: 6px;
+}
+
+html[data-theme="dark"] .auth-logo-bg {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
 .auth-brand-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+  width: 85px;
+  height: 85px;
   object-fit: contain;
 }
 
@@ -3350,7 +3365,6 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: var(--bg);
 }
 
 .auth-card {
@@ -3364,6 +3378,7 @@ body {
 
 .auth-brand {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
   font-family: var(--font-display);
@@ -3532,7 +3547,7 @@ body {
     width: 100%;
     padding: 8px 12px;
     min-height: 48px;
-    background: #1a1a1a;
+    background: #000000;
   }
 
   .orbit-header {
@@ -3594,7 +3609,7 @@ body {
     background: #e04040;
     color: #fff;
     border: none;
-    border-radius: 16px;
+    border-radius: 6px;
     padding: 6px 18px;
     font-family: var(--font-body);
     font-size: 14px;
@@ -3666,7 +3681,7 @@ body {
     align-items: stretch;
     gap: 0;
     padding: 8px 0 max(env(safe-area-inset-bottom), 8px);
-    background: #1a1a1a;
+    background: #000000;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 
@@ -3713,6 +3728,10 @@ body {
 
   .room-shell .ctrl:active {
     background: rgba(255, 255, 255, 0.05);
+  }
+
+  .room-shell .ctrl .ctrl-caret {
+    display: none !important;
   }
 
   .room-shell .ctrl .ctrl-icon {
@@ -4187,7 +4206,6 @@ html[data-theme="light"] .tile-name {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
 }

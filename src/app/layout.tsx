@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { UserProvider } from "@/context/UserContext";
 import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
+import StarfieldBackground from "@/components/StarfieldBackground";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -50,6 +51,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Orbit Meeting" />
       </head>
       <body>
+        <StarfieldBackground />
         <AuthProvider>
           <UserProvider>{children}</UserProvider>
         </AuthProvider>

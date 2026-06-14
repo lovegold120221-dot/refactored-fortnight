@@ -448,7 +448,7 @@ function MicButton({
       <CtrlButton
         active={micOn}
         onClick={toggleMic}
-        label="Mic"
+        label={micOn ? "Mute" : "Unmute"}
         icon={micOn ? <MicOnIcon /> : <MicOffIcon />}
         dataMobile="primary"
         muted={!micOn}

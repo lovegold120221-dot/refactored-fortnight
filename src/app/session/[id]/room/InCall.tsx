@@ -21,7 +21,7 @@ import BreakoutSidebar from "./BreakoutSidebar";
 import ScreenShareView from "./ScreenShareView";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
 import GalleryView from "./GalleryView";
-import { SpeakerIcon, ChevronDownIcon, LinkIcon } from "./icons";
+import { SpeakerIcon, ChevronDownIcon, LinkIcon, ShieldCheckIcon } from "./icons";
 
 export default function InCall({
   initialLang,
@@ -225,7 +225,7 @@ export default function InCall({
               <SpeakerIcon />
             </button>
             <button className="orbit-mobile-brand">
-              <span className="orbit-mobile-badge">✓</span>
+              <ShieldCheckIcon style={{ color: "#22c55e", strokeWidth: 1.5, width: "18px", height: "18px" }} />
               <span>Orbit</span>
               <ChevronDownIcon />
             </button>
