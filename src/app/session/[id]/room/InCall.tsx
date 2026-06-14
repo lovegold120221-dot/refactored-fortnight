@@ -34,7 +34,6 @@ export default function InCall({
   const { localParticipant } = useLocalParticipant();
   const remotes = useRemoteParticipants();
   const [lang, setLang] = useState(initialLang);
-  const [translationEnabled, setTranslationEnabled] = useState(true);
   const [translatorMuted, setTranslatorMuted] = useState(false);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [speakerMuted, setSpeakerMuted] = useState(false);
@@ -132,7 +131,7 @@ export default function InCall({
     };
   }, [room, localParticipant, lang, handRaised, isHost]);
 
-  useTranslationRouting(lang, translationEnabled, true, true, translatorMuted, speakerMuted);
+  useTranslationRouting(lang, true, true, true, translatorMuted, speakerMuted);
 
 
 

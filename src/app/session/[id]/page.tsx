@@ -29,12 +29,14 @@ export default function PreFlightPage({
   // Hydrate from sessionStorage + profile after mount so server & client
   // first render are identical (prevents hydration mismatch on disabled attr).
   useEffect(() => {
-    const savedName = getSessionItem(STORAGE_KEY_NAME);
-    const savedLang = getSessionItem(STORAGE_KEY_LANG);
-    if (savedName) setDisplayName(savedName);
-    if (savedLang) setLang(savedLang);
-    if (!savedName && profile?.name) setDisplayName(profile.name);
-    if (!savedLang && profile?.default_language) setLang(profile.default_language);
+    setTimeout(() => {
+      const savedName = getSessionItem(STORAGE_KEY_NAME);
+      const savedLang = getSessionItem(STORAGE_KEY_LANG);
+      if (savedName) setDisplayName(savedName);
+      if (savedLang) setLang(savedLang);
+      if (!savedName && profile?.name) setDisplayName(profile.name);
+      if (!savedLang && profile?.default_language) setLang(profile.default_language);
+    }, 0);
   }, [profile]);
 
   async function handleJoin() {
@@ -64,7 +66,10 @@ export default function PreFlightPage({
     <div className="page page-centered">
       <div className="entry-panel panel-centered">
         <div className="auth-brand mb-24">
-          <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
+          <div className="auth-logo-bg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" />
+          </div>
           <span>Orbit Meeting</span>
         </div>
         <h1 className="display display-lg enter mb-8">
