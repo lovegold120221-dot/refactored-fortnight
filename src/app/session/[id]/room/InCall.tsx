@@ -131,7 +131,7 @@ export default function InCall({
     };
   }, [room, localParticipant, lang, handRaised, isHost]);
 
-  useTranslationRouting(lang, true, true, true, translatorMuted, speakerMuted);
+  useTranslationRouting(lang, localParticipant.identity, true, true, true, translatorMuted, speakerMuted);
 
 
 

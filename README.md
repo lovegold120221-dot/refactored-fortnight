@@ -57,6 +57,26 @@ For each active pair the agent publishes into the room:
 
 The frontend subscribes to either the native mic or the matching `tx:*` track for each peer, based on `(listener_lang, speaker_lang)` and the track source.
 
+### Translation Routing Logic
+
+The frontend dynamically filters which translation tracks it subscribes to based on the following logic matrix (implemented in `useTranslationRouting.ts`):
+
+```mermaid
+flowchart TD
+    Start["Incoming Translation Track<br>tx:{speaker}:{source}:{targetLang}"] --> CheckTarget{"targetLang == myLang?"}
+    
+    CheckTarget -- No --> Block1["🚫 Block<br>(Not your language)"]
+    CheckTarget -- Yes --> CheckSelf{"speaker == myIdentity?"}
+    
+    CheckSelf -- Yes --> CheckSource{"source == 'screen_share_audio'?"}
+    CheckSource -- No --> Block2["🚫 Block<br>(Don't echo your own voice)"]
+    CheckSource -- Yes --> Allow1["✅ Allow<br>(Translate own screen share)"]
+    
+    CheckSelf -- No --> CheckNative{"speaker's Native Lang == myLang?"}
+    CheckNative -- Yes --> Block3["🚫 Block<br>(Hear their native voice instead)"]
+    CheckNative -- No --> Allow2["✅ Allow<br>(Standard translation)"]
+```
+
 ---
 
 ## Quick start

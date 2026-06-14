@@ -55,6 +55,7 @@ function parseTranslationTrackName(
  */
 export function useTranslationRouting(
   myLang: string,
+  myIdentity: string,
   translationEnabled: boolean = true,
   muteOriginal: boolean = true,
   translateScreenShare: boolean = true,
@@ -76,7 +77,7 @@ export function useTranslationRouting(
 
       for (const p of remotes) {
         if (p.kind === ParticipantKind.AGENT) {
-          applyAgentSubscriptions(p, myLang, peerLangs, translationEnabled, translateScreenShare, translatorMuted);
+          applyAgentSubscriptions(p, myLang, myIdentity, peerLangs, translationEnabled, translateScreenShare, translatorMuted);
         } else {
           applyHumanSubscriptions(p, myLang, translationEnabled, muteOriginal, translateScreenShare, speakerMuted);
         }
@@ -91,6 +92,8 @@ export function useTranslationRouting(
       [RoomEvent.ParticipantAttributesChanged, apply],
       [RoomEvent.TrackPublished, apply],
       [RoomEvent.TrackUnpublished, apply],
+      [RoomEvent.TrackSubscribed, apply],
+      [RoomEvent.TrackUnsubscribed, apply],
       [RoomEvent.LocalTrackPublished, apply],
     ];
     for (const [event, handler] of handlers) {
@@ -101,7 +104,7 @@ export function useTranslationRouting(
         room.off(event, handler);
       }
     };
-  }, [room, myLang, translationEnabled, muteOriginal, translateScreenShare, translatorMuted, speakerMuted]);
+  }, [room, myLang, myIdentity, translationEnabled, muteOriginal, translateScreenShare, translatorMuted, speakerMuted]);
 }
 
 function applyHumanSubscriptions(
@@ -137,6 +140,7 @@ function applyHumanSubscriptions(
 function applyAgentSubscriptions(
   agent: RemoteParticipant,
   myLang: string,
+  myIdentity: string,
   peerLangs: Map<string, string | undefined>,
   translationEnabled: boolean,
   translateScreenShare: boolean,
@@ -157,6 +161,20 @@ function applyAgentSubscriptions(
 
     const matchesMe = parsed.targetLang === myLang;
     if (!matchesMe) {
+      setSubscribed(pub, false);
+      continue;
+    }
+
+    // Never subscribe to translations of our own voice (unless it's screen share audio)
+    if (parsed.sourceIdentity === myIdentity && parsed.trackSource !== "screen_share_audio") {
+      setSubscribed(pub, false);
+      continue;
+    }
+
+    // If the remote user is already speaking our target language,
+    // we don't need a translation. We'll hear their original voice.
+    const sourcePeerLang = peerLangs.get(parsed.sourceIdentity);
+    if (sourcePeerLang === myLang) {
       setSubscribed(pub, false);
       continue;
     }
