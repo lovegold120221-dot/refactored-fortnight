@@ -5414,6 +5414,16 @@ html[data-theme="light"] .tile-name {
   background: var(--bg);
 }
 
+.chat-sidebar-error {
+  background: rgba(255, 50, 50, 0.15);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: #ff6b6b;
+}
+
 .chat-sidebar-form {
   display: flex;
   gap: 8px;

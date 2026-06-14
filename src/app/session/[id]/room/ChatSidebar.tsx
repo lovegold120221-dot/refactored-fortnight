@@ -32,6 +32,7 @@ export default function ChatSidebar({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const seenIds = useRef(new Set<string>());
 
@@ -117,13 +118,17 @@ export default function ChatSidebar({
     setText("");
 
     // 3. Persist to Supabase (all public messages, including anonymous)
+    setSaveError(null);
     supabase.from("chat_messages").insert({
       meeting_id: room.name,
       user_id: senderId,
       sender_name: senderName,
       message: msg.message,
     }).then(({ error }) => {
-      if (error) console.error("Failed to save chat:", error);
+      if (error) {
+        console.error("Failed to save chat:", error);
+        setSaveError("Chat not saved to server. Check Supabase migrations.");
+      }
     });
   };
 
@@ -161,6 +166,9 @@ export default function ChatSidebar({
       </div>
 
       <div className="chat-sidebar-footer">
+        {saveError && (
+          <div className="chat-sidebar-error">{saveError}</div>
+        )}
         <form
           onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
           className="chat-sidebar-form"
