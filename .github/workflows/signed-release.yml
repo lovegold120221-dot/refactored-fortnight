@@ -54,14 +54,7 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
 
       - name: Build + notarize macOS (x64)
-        run: |
-          npx electron-builder --config electron-builder.yml --mac --x64 \
-            -c.mac.hardenedRuntime=true \
-            -c.mac.notarize=true \
-            -c.mac.category="public.app-category.productivity" \
-            -c.mac.icon=electron/assets/icon.icns \
-            -c.mac.artifactName="\${productName}-\${version}-mac-\${arch}.\${ext}" \
-            -c.mac.target='[{"target":"dmg","arch":["x64","arm64"]},{"target":"zip","arch":["x64","arm64"]}]'
+        run: npx electron-builder --config electron-builder.yml --mac --x64
         env:
           CSC_LINK: /tmp/certificate.p12
           CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
@@ -70,14 +63,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Build + notarize macOS (arm64)
-        run: |
-          npx electron-builder --config electron-builder.yml --mac --arm64 \
-            -c.mac.hardenedRuntime=true \
-            -c.mac.notarize=true \
-            -c.mac.category="public.app-category.productivity" \
-            -c.mac.icon=electron/assets/icon.icns \
-            -c.mac.artifactName="\${productName}-\${version}-mac-\${arch}.\${ext}" \
-            -c.mac.target='[{"target":"dmg","arch":["x64","arm64"]},{"target":"zip","arch":["x64","arm64"]}]'
+        run: npx electron-builder --config electron-builder.yml --mac --arm64
         env:
           CSC_LINK: /tmp/certificate.p12
           CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
