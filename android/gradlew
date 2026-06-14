@@ -17,6 +17,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+# Force JDK 21 for compatibility with Gradle 8.14
+export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
 
 ##############################################################################
 #

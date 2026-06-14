@@ -8,7 +8,7 @@ import { SettingsIcon } from "@/app/session/[id]/room/icons";
 import CameraPreview from "./CameraPreview";
 import TranslationPlayground from "./TranslationPlayground";
 
-type SettingsTab = "general" | "audio" | "video" | "translation" | "recording";
+type SettingsTab = "general" | "audio" | "video" | "translation" | "glossary" | "recording";
 
 const VOICES = [
   { id: "male1", label: "Male 1" },
@@ -22,6 +22,7 @@ const TABS: { id: SettingsTab; label: string }[] = [
   { id: "audio", label: "Audio" },
   { id: "video", label: "Video" },
   { id: "translation", label: "Translation" },
+  { id: "glossary", label: "Glossary" },
   { id: "recording", label: "Recording" },
 ];
 
@@ -355,14 +356,21 @@ export default function SettingsPage() {
                   </label>
                 </div>
 
-                {/* ——— Custom Glossary ——— */}
+                {/* ——— Translation Test Playground ——— */}
                 <div className="settings-divider" />
+                <TranslationPlayground voice={voice} />
+              </div>
+            )}
+
+            {activeTab === "glossary" && (
+              <div className="settings-tab">
+                <h2 className="settings-tab-title">Custom Glossary</h2>
+                <p className="settings-tab-desc">
+                  Define terms and phrases that should always be translated in a specific way.
+                  Useful for brand names, technical jargon, or specialized vocabulary.
+                </p>
+
                 <div className="settings-glossary-section">
-                  <h3 className="settings-section-title">Custom Glossary</h3>
-                  <p className="settings-hint">
-                    Define terms and phrases that should always be translated in a specific way.
-                    Useful for brand names, technical jargon, or specialized vocabulary.
-                  </p>
                   <div className="settings-glossary-entries">
                     {glossary.map((entry, idx) => (
                       <div key={idx} className="settings-glossary-row">
@@ -416,10 +424,6 @@ export default function SettingsPage() {
                     + Add term
                   </button>
                 </div>
-
-                {/* ——— Translation Test Playground ——— */}
-                <div className="settings-divider" />
-                <TranslationPlayground voice={voice} />
               </div>
             )}
 

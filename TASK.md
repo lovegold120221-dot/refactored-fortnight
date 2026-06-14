@@ -1497,4 +1497,24 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 - **Known issues:** `dialect_instruction` unused variable in `session.py` is pre-existing (lint F841).
 - **Next steps:** User to verify glossary in Settings → Translation tab on the running app.
 
+## TASK-20260615-025000: Implement Dynamic Dialect & Glossary Steering
 
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-15T02:50:00Z
+- User request: Implement Dynamic Dialect & Glossary Steering from todo-upgrade.md
+- Success criteria:
+  - Custom Glossary has its own tab in settings.
+  - Gemini Live WS connection correctly receives and respects the systemInstruction (mimic instructions, glossary terms, dialect steering).
+  - Linter warnings are resolved.
+
+### WHAT WAS DONE
+- **WebSocket System Instruction steering (Backend):** Modified `_build_setup_payload` in `translator/src/session.py` to combine the `base_instruction` and `dialect_instruction` into a `systemInstruction` object. Now, Gemini Live receives the full instruction set (including custom glossary terms, flemish/belgian dialect instructions, and conversation context).
+- **Settings tab promotion (Frontend):** Restructured `src/app/settings/page.tsx` to add a new `"glossary"` SettingsTab. Promoted the custom glossary row list editor from the Translation tab to this new dedicated Glossary tab, making the Settings interface much cleaner.
+- **CSS order fix (globals.css):** Swapped the declarations of `backdrop-filter` and `-webkit-backdrop-filter` on lines 3867 and 5310 in `src/app/globals.css` to satisfy the CSS stylesheet declaration order linter.
+
+### Files changed
+- `translator/src/session.py` (MODIFY)
+- `src/app/settings/page.tsx` (MODIFY)
+- `src/app/globals.css` (MODIFY)
+- `TASK.md` (MODIFY)

@@ -299,11 +299,16 @@ class GeminiSession:
                 "or Wallonia, not from Paris."
             ),
         }
-        dialect_instruction = dialect_map.get(self._target_lang, "")
+        system_instruction_text = base_instruction
+        if dialect_instruction:
+            system_instruction_text += dialect_instruction
 
         return {
             "setup": {
                 "model": f"models/{GEMINI_MODEL}",
+                "systemInstruction": {
+                    "parts": [{"text": system_instruction_text}]
+                },
                 "outputAudioTranscription": {},
                 "inputAudioTranscription": {},
                 "generationConfig": {

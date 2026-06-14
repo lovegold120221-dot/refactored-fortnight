@@ -7,6 +7,8 @@
   "packageManager": "pnpm@10.18.0",
   "scripts": {
     "setup": "bash scripts/setup.sh",
+    "gradle:stop": "cd android && ./gradlew --stop",
+    "gradle:status": "cd android && ./gradlew -version",
     "dev": "concurrently --kill-others-on-fail -n web,agent -c blue,magenta \"pnpm run dev:web\" \"pnpm run dev:agent\"",
     "dev:web": "next dev",
     "dev:agent": "cd translator && uv run python src/agent.py dev",

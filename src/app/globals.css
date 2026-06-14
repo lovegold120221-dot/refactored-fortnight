@@ -3864,8 +3864,8 @@ html[data-theme="dark"] .auth-logo-bg {
     border-left: none !important;
     border-radius: 16px 16px 0 0 !important;
     box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
     overflow-y: auto !important;
     transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
     will-change: transform;
@@ -5307,8 +5307,8 @@ html[data-theme="light"] .tile-name {
 /* ——— Glassmorphism panel ——— */
 .glass-panel {
   background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
 }
