@@ -1259,3 +1259,70 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 ### Validation
 - `pnpm build` — Checked, Next.js build completed successfully inside the sandbox.
 - Python tests — Ran unit tests with PYTHONPATH matching venv packages, 15/15 tests passed.
+
+## TASK-20260614-135500: Fix missing asyncio import in audio.py
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T13:55:00Z
+- User request: Fix the `name 'asyncio' is not defined` crash in the python agent
+
+### WHAT WAS DONE
+- Added missing `import asyncio` to the top of `translator/src/audio.py`.
+
+### Files changed
+- `translator/src/audio.py` — Added `import asyncio`.
+
+### Validation
+- Python tests — Ran unit tests with PYTHONPATH matching venv packages, 15/15 tests passed.
+- `pnpm build` — Next.js build completed successfully inside the sandbox.
+
+## TASK-20260614-140200: Group transcription and translation display
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T14:02:00Z
+- User request: Update the transcription and translation display to pair/group source and translated lines, prefix source with display name, prefix translation with "Orbit Translator:", and use distinct colors.
+
+### WHAT WAS DONE
+- **Updated `CaptionsSidebar.tsx`**: Changed `Translator:` prefix to `Orbit Translator:`.
+- **Updated `OrbitTranslationPanel.tsx`**: Updated the hook and JSX rendering to group source transcript and translated output into completed source/translation pairs using the same logic as `CaptionsSidebar`.
+- **Wired display prefixes**: Each source transcript line is now prefixed with the speaker's display name, and each translated line is prefixed with `Orbit Translator:`.
+- **Distinct colors**: Added CSS style `.captions-text--translated strong { color: var(--accent); }` in `globals.css` to color the translated prefix, ensuring that the source lines (white/gray) and translated lines (blue) are fully distinct.
+
+### Files changed
+- `src/app/session/[id]/room/CaptionsSidebar.tsx` — Changed translation prefix to `Orbit Translator`.
+- `src/app/session/[id]/room/OrbitTranslationPanel.tsx` — Updated hook and JSX to display grouped/paired lines with proper prefixes.
+- `src/app/globals.css` — Colored the `Orbit Translator` prefix using the accent color for distinction.
+
+### Validation
+- `pnpm build` — Next.js build completed successfully.
+- Python tests — 15/15 tests passed.
+
+## TASK-20260614-141000: Split translation sidebar into two vertical sections
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T14:10:00Z
+- User request: Split the translation sidebar into two vertical sections: upper for original transcription (display name prefix) and lower for translated output (Orbit Translator prefix) with independent scroll areas and distinct styling.
+
+### WHAT WAS DONE
+- **Updated `OrbitTranslationPanel.tsx`**:
+  - Replaced the single `bodyRef` with `sourceBodyRef` and `translatedBodyRef` to manage independent auto-scroll behaviors.
+  - Split the JSX rendering into two separate areas: the upper area filters `entries` for `sourceText`, and the lower area filters `entries` for `translatedText`.
+  - Structured the panels with clear section headers (`Original Transcription` and `Translated Output`), an independent scroll area container (`otp-scroll-area`), and a divider line.
+  - Kept the language flow indicator in the lower area, linked to each translated utterance.
+- **Updated `globals.css`**:
+  - Added `.otp-split-body` flex properties to make it fill the vertical space correctly without overflow.
+  - Added `.otp-section-header` mono-spaced typography.
+  - Added `.otp-scroll-area` scrollbar behavior and layout properties.
+  - Added `.otp-split-divider` border rules.
+
+### Files changed
+- `src/app/session/[id]/room/OrbitTranslationPanel.tsx` — Split rendering into source and translation areas with independent refs.
+- `src/app/globals.css` — Added layout, header, scroll, and divider styles for the split sidebar.
+
+### Validation
+- `pnpm build` — Checked, Next.js build completed successfully inside the sandbox.
+- Python tests — Ran unit tests, 15/15 tests passed.
+

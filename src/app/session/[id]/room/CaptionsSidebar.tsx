@@ -119,7 +119,7 @@ export default function CaptionsSidebar({
               )}
               {entry.translatedText && (
                 <p className="captions-text captions-text--translated">
-                  <strong>Translator:</strong> {entry.translatedText}
+                  <strong>Orbit Translator:</strong> {entry.translatedText}
                 </p>
               )}
             </div>
