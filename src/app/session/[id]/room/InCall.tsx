@@ -21,7 +21,7 @@ import BreakoutSidebar from "./BreakoutSidebar";
 import ScreenShareView from "./ScreenShareView";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
 import GalleryView from "./GalleryView";
-import { SpeakerIcon, SpeakerOffIcon, ChevronDownIcon, LinkIcon, ShieldCheckIcon } from "./icons";
+import { SpeakerIcon, ChevronDownIcon, LinkIcon, ShieldCheckIcon } from "./icons";
 
 export default function InCall({
   initialLang,
@@ -133,9 +133,6 @@ export default function InCall({
 
   useTranslationRouting(lang, localParticipant.identity, true, true, true, translatorMuted, speakerMuted);
 
-
-
-
   const humanRemotes = useMemo(
     () => remotes.filter((p) => p.kind !== ParticipantKind.AGENT),
     [remotes],
@@ -177,14 +174,6 @@ export default function InCall({
               <span className="orbit-translation-status orbit-translation-status-text">
                 Translation: {langInfo?.name || lang}
               </span>
-              <button
-                className="orbit-view-btn"
-                onClick={() => setTranslatorMuted(!translatorMuted)}
-                title={translatorMuted ? "Unmute translator" : "Mute translator"}
-                aria-label={translatorMuted ? "Unmute translator" : "Mute translator"}
-              >
-                {translatorMuted ? <SpeakerOffIcon /> : <SpeakerIcon />}
-              </button>
             </div>
             
             <div className="orbit-topbar-right">
