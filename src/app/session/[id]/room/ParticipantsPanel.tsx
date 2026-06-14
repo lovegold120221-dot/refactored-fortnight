@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import {
-  useIsSpeaking,
   useLocalParticipant,
 } from "@livekit/components-react";
 import { Track, type LocalParticipant, type RemoteParticipant } from "livekit-client";
@@ -154,15 +153,10 @@ export default function ParticipantsPanel({
           initial={(localParticipant?.name || localParticipant?.identity || "Y").slice(0, 1).toUpperCase()}
           micOn={micOn}
           camOn={camOn}
-          handRaised={handRaised}
           isHost={isHost}
           onToggleChat={onToggleChat}
           onToggleMic={() => localParticipant?.setMicrophoneEnabled(!micOn)}
           onToggleCam={() => localParticipant?.setCameraEnabled(!camOn)}
-          onToggleHand={() => {
-            const cur = localParticipant?.attributes?.orbit_hand === "raised";
-            localParticipant?.setAttributes({ orbit_hand: cur ? "" : "raised" });
-          }}
         />
 
         {sorted.length === 0 && (
@@ -200,12 +194,12 @@ export default function ParticipantsPanel({
 // ── Self Row ──────────────────────────────────────────────────────────
 
 function SelfRow({
-  name, initial, micOn, camOn, handRaised, isHost,
-  onToggleMic, onToggleCam, onToggleHand, onToggleChat,
+  name, initial, micOn, camOn, isHost,
+  onToggleMic, onToggleCam, onToggleChat,
 }: {
-  name: string; initial: string; micOn: boolean; camOn: boolean; handRaised: boolean;
+  name: string; initial: string; micOn: boolean; camOn: boolean;
   isHost: boolean;
-  onToggleMic: () => void; onToggleCam: () => void; onToggleHand: () => void;
+  onToggleMic: () => void; onToggleCam: () => void;
   onToggleChat: () => void;
 }) {
   return (
@@ -298,7 +292,7 @@ function ParticipantRow({
         <button className="pp-row-chat" onClick={(e) => { e.stopPropagation(); onToggle(); }} title={`Chat with ${name}`}>
           <ChatIcon />
         </button>
-        <button className="pp-row-more" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
+        <button className="pp-row-more" onClick={(e) => { e.stopPropagation(); onToggle(); }} title="More options">
           <MoreVerticalIcon />
         </button>
       </div>
