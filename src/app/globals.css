@@ -1123,8 +1123,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
-  padding: 0 24px;
+  min-height: 64px;
+  padding: 12px 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .orbit-topbar-left,
@@ -3534,7 +3536,7 @@ html[data-theme="dark"] .auth-logo-bg {
   /* ——— Topbar: native mobile layout ——— */
 
   /* Hide desktop topbar elements */
-  .orbit-titlebar,
+  .orbit-topbar-desktop,
   .orbit-subbar {
     display: none !important;
   }
@@ -3755,13 +3757,13 @@ html[data-theme="dark"] .auth-logo-bg {
 
   /* ——— Panels: full screen overlays on mobile ——— */
   .sidebar-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100vw;
-    height: 100%;
-    z-index: 50;
-    background: var(--bg);
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 100% !important;
+    z-index: 50 !important;
+    background: var(--bg) !important;
   }
 
   .orbit-translation-panel {
