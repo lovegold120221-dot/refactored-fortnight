@@ -8,6 +8,7 @@ import {
 } from "@livekit/components-react";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@/context/UserContext";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 type ChatMessage = {
   id: string;
@@ -124,7 +125,7 @@ export default function ChatSidebar({
       user_id: senderId,
       sender_name: senderName,
       message: msg.message,
-    }).then(({ error }) => {
+    }).then(({ error }: { error: PostgrestError | null }) => {
       if (error) {
         console.error("Failed to save chat:", error);
         setSaveError("Chat not saved to server. Check Supabase migrations.");
